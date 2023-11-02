@@ -18,25 +18,7 @@ bool isEqual(double a, double b) {
 }
 
 
-std::istream & operator >> (std::istream& input, MinimizerIndex &M) {
-    input >> M.N;
-    input >> M.alph;
-    int A = M.alph.size();
-    for (int i = 0; i < M.N; ++i) {
-        double sum = 0;
-        vector<double> symbol(A, 0);
-        for (int j = 0; j < A; ++j) {
-            input >> symbol[j];
-            sum += symbol[j];
-        }
-        if (!isEqual(sum,1)) {
-            cerr << "Probabilities at position " << i << " do not sum up to 1" << std::endl;
-            throw 1;
-        }
-        M.fP.emplace_back(symbol);
-    }
- 	return input;
-}
+
 
 
 
@@ -112,12 +94,7 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 	return beg_pos;
 }
 
-
-
-//MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
-void MinimizerIndex::build_index(double z, int l){
-	vector<vector<double>> P;
-	int k = ceil(log2(l) / log2(alph.size())); //TODO multiply by 4, but this multiplication forces large l
+MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
 	int n = P.size();
 	//list<pair<int,list<pair<int, char>>>> minimizer_strings_before_pruning;
 	list<pair<size_t,size_t>> minimizer_substrings;
@@ -125,9 +102,9 @@ void MinimizerIndex::build_index(double z, int l){
 	//map<char,int> alph_rev={{'A',0},{'C',1},{'G',2},{'T',3}}; //TODO we should do this formally to be input dependent, or preferably allow P to be asked with letter
 	pi_prefix = vector<double> (n,1);
 	for(auto i = 0; i < P.size(); i++){
-		int which_max = max_element(fP[i].begin(), fP[i].end()) - fP[i].begin();
-		H+=(alph[which_max]);
-		double pi = fP[i][which_max];
+		int which_max = max_element(P[i].begin(), P[i].end()) - P[i].begin();
+		H+=(A[which_max]);
+		double pi = P[i][which_max];
 		if(i == 0){
 			pi_prefix[i] = log2(pi);
 		}else{
@@ -137,8 +114,8 @@ void MinimizerIndex::build_index(double z, int l){
 	cout<< pi_prefix[n-1]<<endl;
 	//root = new setNode(n, nullptr);
 	map<char, int> amap;
-	for(int i = 0; i < alph.size(); i++){
-		amap[alph[i]] = i;
+	for(int i = 0; i < A.size(); i++){
+		amap[A[i]] = i;
 	}
 	
 	string S;
@@ -152,20 +129,20 @@ void MinimizerIndex::build_index(double z, int l){
 	cout << "Heavy string: " << H << endl;
 	while( a != n ){
 		int sig = sig1 + 1;
-		if( a >= 0 && sig != alph.size() ){
-			if( p != 1 || alph[sig] != H[a] ){
-				if( p * fP[a][sig] * z < 1 ){
+		if( a >= 0 && sig != A.size() ){
+			if( p != 1 || A[sig] != H[a] ){
+				if( p * P[a][sig] * z < 1 ){
 					sig1 = sig;
 					continue;
 				}else{
-					p *= fP[a][sig];
+					p *= P[a][sig];
 				}
 			}else{
 				pos1 = a;
 			}
-			S.insert(0, 1, alph[sig]);
-			if(H[a] != alph[sig]){
-				diff.push_front(make_pair(a, alph[sig]));
+			S.insert(0, 1, A[sig]);
+			if(H[a] != A[sig]){
+				diff.push_front(make_pair(a, A[sig]));
 			}
 			if(S.size() >= l){
 				double pi_cum = 1;
@@ -198,7 +175,7 @@ void MinimizerIndex::build_index(double z, int l){
 				}
 			}
 			if(!isEqual(p,1)){
-				p /= fP[a][amap[S[0]]];
+				p /= P[a][amap[S[0]]];
 			}else{
 				pos1=a+1;
 			}

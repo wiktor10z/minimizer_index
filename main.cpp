@@ -38,8 +38,7 @@ using get_time = chrono::steady_clock;
 int main (int argc, char ** argv )
 {
     Settings st = decode_switches(argc, argv);
-	//istream& text_file = st.text.is_open()?st.text:cin;
-	istream& text = st.text.is_open()?st.text:cin;
+	istream& text_file = st.text.is_open()?st.text:cin;
 	ostream& output_file = st.output.is_open()?st.output:cout;
 	ofstream result;
 	
@@ -48,11 +47,10 @@ int main (int argc, char ** argv )
     // mi = mallinfo2();
 	// double begin_ram = mi.hblkhd + mi.uordblks;
 	
-	//double z = st.z;
-	//int ell = st.ell;
+	double z = st.z;
+	int ell = st.ell;
 
 	string alphabet;
-	/*
 	vector<vector<double>> text;
 
 		karp_rabin_hashing::init();
@@ -73,16 +71,12 @@ int main (int argc, char ** argv )
         }
         text.emplace_back(symbol);
     }
-	*/
-	MinimizerIndex M;
-	text >> M;
-	M.build_index(st.z,st.ell);
 	
-	//int k = ceil(log2(st.ell) / log2(alphabet.size())); //TODO multiply by 4, but this multiplication forces large l
-	//int w = ell - k + 1;
+	int k = ceil(log2(ell) / log2(alphabet.size())); //TODO multiply by 4, but this multiplication forces large l
+	int w = ell - k + 1;
 	
 	cout << "finish reading" << endl;
-	//MinimizerIndex SET(text, alphabet, k, ell, z);
+	MinimizerIndex SET(text, alphabet, k, ell, z);
 	cout << "Minimizer Index build finish" << endl;
 	
 	//SET.bfs();
