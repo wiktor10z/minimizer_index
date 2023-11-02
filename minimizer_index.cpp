@@ -128,14 +128,14 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 //MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
 void MinimizerIndex::build_index(double z, int l){
 	//vector<vector<double>> P;
-	cout << alph<<endl;
+	//cout << alph<<endl;
 	int k = ceil(log2(l) / log2(alph.size())); //TODO multiply by 4, but this multiplication forces large l
 	int n = fP.size();
 	//list<pair<int,list<pair<int, char>>>> minimizer_strings_before_pruning;
 	list<pair<size_t,size_t>> minimizer_substrings;
 	size_t minimizer_count=0;
 	//map<char,int> alph_rev={{'A',0},{'C',1},{'G',2},{'T',3}}; //TODO we should do this formally to be input dependent, or preferably allow P to be asked with letter
-	cout<< pi_prefix[n-1]<<endl;
+	//cout<< pi_prefix[n-1]<<endl;
 	//root = new setNode(n, nullptr);
 	map<char, int> amap;
 	for(int i = 0; i < alph.size(); i++){
@@ -151,7 +151,7 @@ void MinimizerIndex::build_index(double z, int l){
 	int sig1 = -1;
 	int pos1 = n;
 
-	cout << "Heavy string: " << H << endl;
+	//cout << "Heavy string: " << H << endl;
 	while( a != n ){
 		int sig = sig1 + 1;
 		if( a >= 0 && sig != alph.size() ){
@@ -255,8 +255,9 @@ void MinimizerIndex::build_index(double z, int l){
 	//cout<<"-----------------------------------------------------------"<<endl;
 	
 	// sorted minimizer strings and lcp between next two such strings
-	list<pair<size_t,size_t>>::iterator iter2=minimizer_substrings.begin();
-	++iter2;
+	//list<pair<size_t,size_t>>::iterator iter2=minimizer_substrings.begin();
+	//++iter2;
+	/*
 	for(list<pair<size_t,size_t>>::iterator iter1=minimizer_substrings.begin();iter1!=minimizer_substrings.end();++iter1){
 		cout<< iter1->first<< ".."<<iter1->second<<" len="<< iter1->second-iter1->first+1<<endl;
 		cout << text.substr(iter1->first,iter1->second-iter1->first+1)<< " "<<iter1->first<<endl;
@@ -265,8 +266,9 @@ void MinimizerIndex::build_index(double z, int l){
 			++iter2;
 		}
 	}
-	cout<< "start building tree"<<endl;
+	* */
+	//cout<< "start building tree"<<endl;
 	forward_index = new PropertySuffixTree(text,minimizer_substrings); //TODO - is it copying the list, or is it the list itself- then we can save space giving the function just &minimizer_substrings
-	forward_index->dfs();
+	//forward_index->dfs();
 	
 }

@@ -50,16 +50,16 @@ int main (int argc, char ** argv )
 	karp_rabin_hashing::init();
 	MinimizerIndex M;
 	text >> M;
-	cout << "finish reading" << endl;
+	//cout << "finish reading" << endl;
 	M.build_index(st.z,st.ell);
-	cout << "Minimizer Index build finish" << endl;
+	//cout << "Minimizer Index build finish" << endl;
 
 	// mi = mallinfo2();
 	
 	// double end_ram = mi.hblkhd + mi.uordblks;
 	auto end = get_time::now();
 	auto diff2 = end - begin;
-	output_file << "CT "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;	
+	//output_file << "CT "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;	
 	// output_file << "CS " << (end_ram-begin_ram)/1000000 << endl;
 
 	return 0;
