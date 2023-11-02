@@ -70,7 +70,6 @@ class HeavyString{
 			}
 			int i=0;
 			list<pair<size_t,size_t>>::iterator minit=min_list.begin();
-			list<list<pair<int,char>>>::iterator diffit=diffs.begin();
 			for(list<list<pair<int,char>>>::iterator diffit=diffs.begin(); diffit!=diffs.end();++diffit){
 				for(list<pair<int,char>>::iterator el=diffit->begin();el!=diffit->end();++el){
 					double this_pi = log2(P[el->first][el->second]);

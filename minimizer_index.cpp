@@ -18,8 +18,37 @@ bool isEqual(double a, double b) {
 }
 
 
-
-
+std::istream & operator >> (std::istream& input, MinimizerIndex &M) {
+    input >> M.N;
+    input >> M.alph;
+    int A = M.alph.size();
+	M.pi_prefix = vector<double> (M.N,1);
+    for (int i = 0; i < M.N; ++i) {
+        double sum = 0;
+        vector<double> symbol(A, 0);
+        for (int j = 0; j < A; ++j) {
+            input >> symbol[j];
+            sum += symbol[j];
+        }
+ 		int which_max = max_element(symbol.begin(), symbol.end()) - symbol.begin();
+		M.H+=(M.alph[which_max]);
+		double pi = symbol[which_max];
+		if(i == 0){
+			M.pi_prefix[i] = log2(pi);
+		}else{
+			M.pi_prefix[i] = M.pi_prefix[i-1] + log2(pi);
+		}       
+        
+        if (!isEqual(sum,1)) {
+            cerr << "Probabilities at position " << i << " do not sum up to 1" << std::endl;
+            throw 1;
+        }
+        M.fP.emplace_back(symbol);
+    }
+    //cout<< M.alph<<endl;
+    //cout << M.H<<endl;
+ 	return input;
+}
 
 
 int MinimizerIndex::find_minimzer_index (string& text,int k){
@@ -94,28 +123,23 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 	return beg_pos;
 }
 
-MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
-	int n = P.size();
+
+
+//MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
+void MinimizerIndex::build_index(double z, int l){
+	//vector<vector<double>> P;
+	cout << alph<<endl;
+	int k = ceil(log2(l) / log2(alph.size())); //TODO multiply by 4, but this multiplication forces large l
+	int n = fP.size();
 	//list<pair<int,list<pair<int, char>>>> minimizer_strings_before_pruning;
 	list<pair<size_t,size_t>> minimizer_substrings;
 	size_t minimizer_count=0;
 	//map<char,int> alph_rev={{'A',0},{'C',1},{'G',2},{'T',3}}; //TODO we should do this formally to be input dependent, or preferably allow P to be asked with letter
-	pi_prefix = vector<double> (n,1);
-	for(auto i = 0; i < P.size(); i++){
-		int which_max = max_element(P[i].begin(), P[i].end()) - P[i].begin();
-		H+=(A[which_max]);
-		double pi = P[i][which_max];
-		if(i == 0){
-			pi_prefix[i] = log2(pi);
-		}else{
-			pi_prefix[i] = pi_prefix[i-1] + log2(pi);
-		}
-	}
 	cout<< pi_prefix[n-1]<<endl;
 	//root = new setNode(n, nullptr);
 	map<char, int> amap;
-	for(int i = 0; i < A.size(); i++){
-		amap[A[i]] = i;
+	for(int i = 0; i < alph.size(); i++){
+		amap[alph[i]] = i;
 	}
 	
 	string S;
@@ -126,23 +150,24 @@ MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int 
 	list<list<pair<int, char>>> global_diff;
 	int sig1 = -1;
 	int pos1 = n;
+
 	cout << "Heavy string: " << H << endl;
 	while( a != n ){
 		int sig = sig1 + 1;
-		if( a >= 0 && sig != A.size() ){
-			if( p != 1 || A[sig] != H[a] ){
-				if( p * P[a][sig] * z < 1 ){
+		if( a >= 0 && sig != alph.size() ){
+			if( p != 1 || alph[sig] != H[a] ){
+				if( p * fP[a][sig] * z < 1 ){
 					sig1 = sig;
 					continue;
 				}else{
-					p *= P[a][sig];
+					p *= fP[a][sig];
 				}
 			}else{
 				pos1 = a;
 			}
-			S.insert(0, 1, A[sig]);
-			if(H[a] != A[sig]){
-				diff.push_front(make_pair(a, A[sig]));
+			S.insert(0, 1, alph[sig]);
+			if(H[a] != alph[sig]){
+				diff.push_front(make_pair(a, alph[sig]));
 			}
 			if(S.size() >= l){
 				double pi_cum = 1;
@@ -175,7 +200,7 @@ MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int 
 				}
 			}
 			if(!isEqual(p,1)){
-				p /= P[a][amap[S[0]]];
+				p /= fP[a][amap[S[0]]];
 			}else{
 				pos1=a+1;
 			}
@@ -212,7 +237,7 @@ MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int 
 	}
 	*/
 	
-	HeavyString text=HeavyString(P,H,minimizer_substrings,global_diff);
+	HeavyString text=HeavyString(fP,H,minimizer_substrings,global_diff);
 	global_diff.clear();
 	//at this point minimizer_substrings stores the beginnings and endings of the strings that should be included in the reversed trie, while text stores their contents.
 	//text = HeavyString(P,H,minimizer_strings_before_pruning);

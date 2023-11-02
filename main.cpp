@@ -38,7 +38,7 @@ using get_time = chrono::steady_clock;
 int main (int argc, char ** argv )
 {
     Settings st = decode_switches(argc, argv);
-	istream& text_file = st.text.is_open()?st.text:cin;
+	istream& text = st.text.is_open()?st.text:cin;
 	ostream& output_file = st.output.is_open()?st.output:cout;
 	ofstream result;
 	
@@ -47,43 +47,12 @@ int main (int argc, char ** argv )
     // mi = mallinfo2();
 	// double begin_ram = mi.hblkhd + mi.uordblks;
 	
-	double z = st.z;
-	int ell = st.ell;
-
-	string alphabet;
-	vector<vector<double>> text;
-
-		karp_rabin_hashing::init();
-	int   N;
-	text_file >> N;
-	text_file >> alphabet;
-	int   A = alphabet.size();
-	for (int   i = 0; i < N; ++i) {
-        double sum = 0;
-        vector<double> symbol(A, 0);
-        for (int   j = 0; j < A; ++j) {
-            text_file >> symbol[j];
-            sum += symbol[j];
-        }
-        if (abs(sum-1) > 1e9) {
-            cerr << "Probabilities at position " << i << " do not sum up to 1" << endl;
-            throw 1;
-        }
-        text.emplace_back(symbol);
-    }
-	
-	int k = ceil(log2(ell) / log2(alphabet.size())); //TODO multiply by 4, but this multiplication forces large l
-	int w = ell - k + 1;
-	
+	karp_rabin_hashing::init();
+	MinimizerIndex M;
+	text >> M;
 	cout << "finish reading" << endl;
-	MinimizerIndex SET(text, alphabet, k, ell, z);
+	M.build_index(st.z,st.ell);
 	cout << "Minimizer Index build finish" << endl;
-	
-	//SET.bfs();
-	//cout << endl;
-	//SET.dfs();
-	//SET.compacteddfs();
-
 
 	// mi = mallinfo2();
 	
