@@ -8,9 +8,9 @@ LFLAGS= -std=c++11 -O3 -DNDEBUG -lboost_iostreams
 
 EXE=   index 
  
-SRC=    main.cpp input.cpp minimizer_index.cpp krfp.cpp utils.cpp heavy_string.cpp PST.cpp
+SRC=    main.cpp input.cpp minimizers.cpp minimizer_index.cpp krfp.cpp utils.cpp heavy_string.cpp PST.cpp
 
-HD=     input.h minimizer_index.h krfp.h heavy_string.h PST.h utils.h Makefile
+HD=     input.h minimizers.h minimizer_index.h krfp.h heavy_string.h PST.h utils.h Makefile
 
 # 
 # No need to edit below this line 

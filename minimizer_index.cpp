@@ -6,6 +6,7 @@
 #include <list>
 #include <functional> 
 #include "minimizer_index.h"
+#include "minimizers.h"
 #include "krfp.h"
 #include "heavy_string.h"
 #include "PST.h"
@@ -125,19 +126,12 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 
 
 
-//MinimizerIndex::MinimizerIndex(vector<vector<double>> &P, string &A, int k, int l, double z){
 void MinimizerIndex::build_index(double z, int l){
-	//vector<vector<double>> P;
-	//cout << alph<<endl;
-	int k = ceil(log2(l) / log2(alph.size())); //TODO multiply by 4, but this multiplication forces large l
+	int k = ceil(4*log2(l) / log2(alph.size()));
 	int n = fP.size();
-	//list<pair<int,list<pair<int, char>>>> minimizer_strings_before_pruning;
 	list<pair<size_t,size_t>> minimizer_substrings;
 	size_t minimizer_count=0;
-	//map<char,int> alph_rev={{'A',0},{'C',1},{'G',2},{'T',3}}; //TODO we should do this formally to be input dependent, or preferably allow P to be asked with letter
 	//cout<< pi_prefix[n-1]<<endl;
-	//root = new setNode(n, nullptr);
-	map<char, int> amap;
 	for(int i = 0; i < alph.size(); i++){
 		amap[alph[i]] = i;
 	}
@@ -150,12 +144,11 @@ void MinimizerIndex::build_index(double z, int l){
 	list<list<pair<int, char>>> global_diff;
 	int sig1 = -1;
 	int pos1 = n;
-
 	//cout << "Heavy string: " << H << endl;
 	while( a != n ){
 		int sig = sig1 + 1;
 		if( a >= 0 && sig != alph.size() ){
-			if( p != 1 || alph[sig] != H[a] ){
+			if( p != 1 || alph[sig] != H[a]){
 				if( p * fP[a][sig] * z < 1 ){
 					sig1 = sig;
 					continue;
@@ -178,7 +171,7 @@ void MinimizerIndex::build_index(double z, int l){
 				}
 				if(pi_cum * z >= 1){
 					string prefixS = S.substr(0,l);
-					minimizers.insert(a-1 + find_minimzer_index(prefixS, k));
+					minimizers.insert(a+ pattern_minimizers(prefixS, k));
 				}
 			}
 			a = a - 1;
@@ -187,7 +180,7 @@ void MinimizerIndex::build_index(double z, int l){
 			a = a + 1;//a is set to the position of the letter that is being removed
 			if(minimizers.find(a) != minimizers.end()){
 				minimizers.erase(a);
-				//finding the longest string starting at this minimizer with weight >=1/z - TODO this can be changed into - we should check the efficiency of each solution
+				//finding the longest string starting at this minimizer with weight >=1/z
 				int pos3=pruning(pos1,-log2(p)-log2(z))+1;
 				minimizer_substrings.push_back(make_pair(minimizer_count+(size_t)a,minimizer_count+(size_t)pos3));
 				global_diff.push_back(diff);
@@ -201,6 +194,7 @@ void MinimizerIndex::build_index(double z, int l){
 			}
 			if(!isEqual(p,1)){
 				p /= fP[a][amap[S[0]]];
+				if(p>0.7) p=1.0;
 			}else{
 				pos1=a+1;
 			}
@@ -237,27 +231,20 @@ void MinimizerIndex::build_index(double z, int l){
 	}
 	*/
 	
-	HeavyString text=HeavyString(fP,H,minimizer_substrings,global_diff);
+	HeavyString text=HeavyString(fP,H,alph,minimizer_substrings,global_diff,pi_prefix);
 	global_diff.clear();
 	//at this point minimizer_substrings stores the beginnings and endings of the strings that should be included in the reversed trie, while text stores their contents.
-	//text = HeavyString(P,H,minimizer_strings_before_pruning);
-	//list<pair<size_t,size_t>>::iterator iter1,iter2;
-	//iter1=minimizer_substrings.begin();
-	//iter2=minimizer_substrings.begin();
-	//++iter2;
-	//cout << text.substr(iter1->first,iter1->second-iter1->first+1)<< " " << text.substr(iter2->first,iter2->second-iter2->first+1)<<"="<<text.compare(*iter1,*iter2) <<endl;
-	//for(list<pair<size_t,size_t>>::iterator iter1=minimizer_substrings.begin();iter1!=minimizer_substrings.end();++iter1){
-	//	cout << text.substr(iter1->first,iter1->second-iter1->first+1)<< " "<<iter1->first<<endl;
-	//}
-	//using namespace std::placeholders; 
+	
+	
 	minimizer_substrings.sort(HeavyString::Heavycompare(&text));
 	//at this point the minimizer_substrings are sorted alphabetically.
-	//cout<<"-----------------------------------------------------------"<<endl;
+		
 	
-	// sorted minimizer strings and lcp between next two such strings
-	//list<pair<size_t,size_t>>::iterator iter2=minimizer_substrings.begin();
-	//++iter2;
+	
 	/*
+	// sorted minimizer strings and lcp between next two such strings
+	list<pair<size_t,size_t>>::iterator iter2=minimizer_substrings.begin();
+	++iter2;
 	for(list<pair<size_t,size_t>>::iterator iter1=minimizer_substrings.begin();iter1!=minimizer_substrings.end();++iter1){
 		cout<< iter1->first<< ".."<<iter1->second<<" len="<< iter1->second-iter1->first+1<<endl;
 		cout << text.substr(iter1->first,iter1->second-iter1->first+1)<< " "<<iter1->first<<endl;
@@ -266,9 +253,45 @@ void MinimizerIndex::build_index(double z, int l){
 			++iter2;
 		}
 	}
-	* */
+	*/
+	
 	//cout<< "start building tree"<<endl;
-	forward_index = new PropertySuffixTree(text,minimizer_substrings); //TODO - is it copying the list, or is it the list itself- then we can save space giving the function just &minimizer_substrings
+	forward_index = new PropertySuffixTree(text, minimizer_substrings);
+	//cout<<"finish building tree"<<endl;
 	//forward_index->dfs();
 	
+}
+
+
+
+double MinimizerIndex::naive_check(string P,int start_pos){
+	if(start_pos<0) return 0;
+	double res=1;
+	for(int i=0;i<P.length();++i){
+		res*=fP[start_pos+i][amap[P[i]]];
+	}
+	return res;
+}
+
+vector<int> MinimizerIndex::occurrences(string const &P, int ell, double z, ostream& result){
+	int m = P.size();
+	int k = ceil(4*log2(ell) / log2(alph.size()));
+	string pattern = P;
+	int min_index = pattern_minimizers(pattern,k);
+	//cout << "pattern "<<P<<" split: " <<P.substr(0,min_index)<<"|"<<P.substr(min_index)<<endl;
+	vector<pair<int,double>> candidates = forward_index->occurrences(P.substr(min_index));
+	//cout<< candidates.size()<<" candidates:"<<endl;
+	std::set<int> occs;
+	for(int i=0;i<candidates.size();++i){
+		//cout<< candidates[i].first-min_index<<":";
+		double first_part_weight=naive_check(P.substr(0,min_index),candidates[i].first-min_index);
+		//cout<< "first part: " <<first_part_weight<<" second part "<< pow(2,candidates[i].second)<<endl;
+		if(first_part_weight*pow(2,candidates[i].second)*z>=1){
+			//if(candidates[i].first!=N-pattern.length()){//TODO this only to match the error in other programs
+				occs.insert(candidates[i].first-min_index);
+			//}
+		}
+	}
+	std::vector<int> final_occs(occs.begin(), occs.end());
+	return final_occs;
 }

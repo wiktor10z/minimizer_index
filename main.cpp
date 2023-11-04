@@ -32,6 +32,10 @@
 #include "heavy_string.h"
 
 
+#include <boost/iostreams/filter/gzip.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+
+
 using namespace std;
 using get_time = chrono::steady_clock;
 
@@ -41,6 +45,8 @@ int main (int argc, char ** argv )
 	istream& text = st.text.is_open()?st.text:cin;
 	ostream& output_file = st.output.is_open()?st.output:cout;
 	ofstream result;
+	int l=st.ell;
+	double z=st.z;
 	
 	auto begin = get_time::now();
 	// struct mallinfo2 mi;
@@ -51,16 +57,48 @@ int main (int argc, char ** argv )
 	MinimizerIndex M;
 	text >> M;
 	//cout << "finish reading" << endl;
-	M.build_index(st.z,st.ell);
+	M.build_index(z,l);
 	//cout << "Minimizer Index build finish" << endl;
-
+	//string Pattern="TCTCT";
+	//M.occurrences(Pattern,l,z,output_file);
 	// mi = mallinfo2();
 	
 	// double end_ram = mi.hblkhd + mi.uordblks;
 	auto end = get_time::now();
 	auto diff2 = end - begin;
-	//output_file << "CT "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;	
+	output_file << "CT "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;	
 	// output_file << "CS " << (end_ram-begin_ram)/1000000 << endl;
+	
+if(!st.patterns.empty()){
+		int total_occ = 0;
+		begin = get_time::now();		
+		ifstream file(st.patterns, std::ios_base::in | std::ios_base::binary);
+		boost::iostreams::filtering_istream patterns;
+		patterns.push(boost::iostreams::gzip_decompressor());
+		patterns.push(file);	
+		begin = get_time::now();
+		//cout<<patterns.size()<<" patterns to check"<<endl;
+		for (string pattern; getline(patterns, pattern); ){
+			//cout << pattern << ":"<<endl;
+			std::vector<int> occs = M.occurrences(pattern, l, z, output_file);
+			if (occs.empty()) {
+				// output_file << "\n";
+			} else {
+				// for (auto p : occs) {
+					// output_file << p << " ";
+				// }
+				// output_file << endl;
+			}
+			total_occ += occs.size();
+		}
+		end = get_time::now();
+		auto diff = end - begin;
+		output_file << "PMT " << chrono::duration_cast<chrono::milliseconds>(diff).count() << "\nOCCS " << total_occ << endl;
+	}
+
+
+
+
 
 	return 0;
 }

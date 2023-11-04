@@ -28,18 +28,19 @@ using namespace std;
 
 PropertySuffixTree::stNode::stNode(PropertySuffixTree::position const &begin, PropertySuffixTree::position const &end): suf_link(NULL), children(), begin(begin), end(end) {}
 
+/*
 PropertySuffixTree::stNode::~stNode() {
     for (auto const &p : children) delete p.second;
 	vector<int>().swap(labels);
 	map<char, stNode*>().swap(children);
 }
+* */
 
 
 PropertySuffixTree::stNode* PropertySuffixTree::stNode::add_leaf(PropertySuffixTree::position const &begin, PropertySuffixTree::position const &end) {
       if (begin == end) return this;
       stNode* leaf = new stNode(begin, end);
       children[*begin] = leaf;
-      //leaf->parent=this;
       return leaf;
 }
 
@@ -47,193 +48,29 @@ void PropertySuffixTree::stNode::split_edge(PropertySuffixTree::position const &
       stNode* new_node = new stNode(split, end);
       end=split;
       new_node->children=children;
+      new_node->minimizers=minimizers;
       children.clear();
       children[*split] = new_node;
+      minimizers.clear();
 }
 
-
-
-
-void PropertySuffixTree::stNode::listel(vector<int>& l) const {
-    l.insert(l.end(), labels.begin(), labels.end());
-    for (auto const &p : children) p.second->listel(l);
-}
-
-void PropertySuffixTree::stNode::print(ostream &out, int d) const {
-    for (int i = 0; i < d; ++i) out << " ";
-    if (d >= 0) for (auto it = begin; it != end; ++it) out << *it;
-    d += end-begin;
-    //for (auto const &l : labels) out << " " << l;
-	out <<  " " << SAinterval.first << " " << SAinterval.second;
-    out << endl;
-    for (auto const &ch : children) ch.second->print(out, d);
-}
-
-PropertySuffixTree::stNode* PropertySuffixTree::stNode::trim(bool is_root) {
-    if (is_root) {
-        suf_link->children.clear();
-        delete suf_link;
-    }
-    suf_link = NULL;
-    for (auto it = children.begin(); it != children.end(); ) {
-        it->second = it->second->trim();
-        if (it->second == NULL) {
-            it = children.erase(it);
-        } else ++it;
-    }
-    if (!labels.empty() || children.size() > 1 || is_root) return this;
-    else if (children.size() == 1) {
-        stNode* son = children.begin()->second;
-        son->begin -= (end-begin);
-        children.clear();
-        delete this;
-        return son;
-    } else {
-        delete this;
-        return NULL;
-    }
-}
-
-PropertySuffixTree::stNode* PropertySuffixTree::stNode::keeper_trim(bool is_root){
-	for(auto it = children.begin(); it != children.end(); ){
-		it->second = it->second->keeper_trim();
-		if( it->second == NULL ){
-			it = children.erase(it);
-		}else ++it;
-	}
-
-    if (is_root) return this;
-    else if (children.size() == 1) {
-        stNode* son = children.begin()->second;
-        son->begin -= (end-begin);
-        children.clear();
-        delete this;
-        return son;
-    } else if (this->keeper == false) {
-        delete this;
-        return NULL;
-    } else{
-		return this;
-	}
-}
-
-PropertySuffixTree::stNode * PropertySuffixTree::Locus::descendant() const{
-    if (is_explicit()) return node;
-    else return node->children[*begin];
-}
-
-void PropertySuffixTree::Locus::fast_forward(){
-    while(!is_explicit()) {
-        stNode* w = node->children[*begin];
-        if (w->end - w->begin <= end - begin) {
-            begin += (w->end - w->begin);
-            node = w;
-        } else break;
-    } 
-}
-
-void PropertySuffixTree::Locus::mark_forward(){
-	node->keeper = true;
-	while(!is_explicit()) {
-		stNode* w = node->children[*begin];
-		w->keeper = true;
-		if(w->end - w->begin <= end - begin) {
-			begin += (w->end - w->begin);
-			node = w;
-		}else break;
-	}
-}
-
-PropertySuffixTree::stNode* PropertySuffixTree::Locus::make_explicit() {
-    fast_forward();
-    if (is_explicit()) return node;
-    stNode *x = node->children[*begin];
-    PropertySuffixTree::position mid = x->begin + (end - begin);
-    stNode* midNode = new stNode(x->begin, mid);
-    node->children[*begin] = midNode;
-    midNode->children[*mid] = x;
-    x->begin = mid;
-    return midNode;
-}
-
-
-void PropertySuffixTree::Locus::suf_link() {
-    node = node->suf_link;
-}
-
-void PropertySuffixTree::Locus::forward(PropertySuffixTree::position limit) {
-    while (end != limit) {
-        if (is_explicit()) {
-            if (node->children.find(*begin) != node->children.end()) ++end;
-            else return;
-        } else {
-            stNode* x = node->children[*begin];
-            PropertySuffixTree::position it = x->begin + (end - begin);
-            while(it != x->end && end != limit) {
-                if (*end != *it) return;
-                ++it;
-                ++end;
-            }
-            if (it == x->end) {
-                node = x;
-                begin = end;
-            }
-        }
-    }
-}
-
-bool PropertySuffixTree::Locus::is_explicit() const {
-    return begin == end;
-}
-
-bool PropertySuffixTree::Locus::operator < (PropertySuffixTree::Locus const &other) const {
-    return end-begin > other.end - other.begin;
-}
-
-
-void PropertySuffixTree::build_suffix_tree() {
-    root = new stNode(text.end()-1, text.end());
-    stNode* top = new stNode(text.begin(), text.begin());
-    root->suf_link = top;
-    for (char c : text) top->children[c] = root;
-    
-    Locus cur(root, text.begin(), text.begin());
-    stNode* prev = NULL, *prev_leaf = NULL;
-
-    for (size_t i = 0; i < text.length(); ++i) {
-        cur.forward(text.end());
-        stNode* w = cur.make_explicit();
-        stNode* leaf = w->add_leaf(cur.end, text.end());
-        
-        if (prev != NULL) prev->suf_link = w;
-        if (prev_leaf != NULL) prev_leaf->suf_link = leaf;
-        prev_leaf = leaf;
-        
-        cur.suf_link();
-        cur.fast_forward();
-        if (cur.is_explicit()) {
-            w->suf_link = cur.node;
-            prev = NULL;
-        } else {
-            prev = w;
-        }    
-    }
-}
 
 //new build_suffix_tree
-void PropertySuffixTree::build_suffix_tree2(list<pair<size_t,size_t>> min_substrings) {
+void PropertySuffixTree::build_suffix_tree(list<pair<size_t,size_t>>& min_substrings) {
     root = new stNode(text.end(), text.end()+1); //root has a pseudo-parent at depth -1 which is never accessed
-    pair<size_t,size_t> curr_string;
+    pair<size_t,size_t> curr_string,next_string;
     int curr_depth,depth1;
-    list<pair<size_t,size_t>>::iterator minit=min_substrings.begin();
     stNode *curr_node;
     int lcp;
     stack<stNode*> ancestors;
 	curr_node=root;
 	curr_string=make_pair(0,-1); 
 	curr_depth=-1;
-	for(list<pair<size_t,size_t>>::iterator minit=min_substrings.begin();minit!=min_substrings.end();++minit){
-		lcp=text.LCP(curr_string,*minit);
+	//for(list<pair<size_t,size_t>>::iterator minit=min_substrings.begin();minit!=min_substrings.end();++minit){
+	while(min_substrings.size()>0){
+		next_string=min_substrings.front();
+		min_substrings.pop_front();
+		lcp=text.LCP(curr_string,next_string);
 		//cout<<"lcp="<<lcp<<endl;
 		//moving up the tree to the node that will be the parent of the new leaf
 		while(curr_depth>=lcp){
@@ -245,277 +82,72 @@ void PropertySuffixTree::build_suffix_tree2(list<pair<size_t,size_t>> min_substr
 		if(lcp!=curr_depth+curr_node->end - curr_node->begin){ // making implict node explicit by spliting the edge
 			curr_node->split_edge(curr_node->begin+lcp-curr_depth);
 		}
-		
-		if(lcp==minit->second-minit->first){
-			curr_node->minimizers.push_back(minit->first);
+		if(lcp==next_string.second-next_string.first){
+			curr_node->minimizers.push_back(next_string.first);
 			continue;
 		}
-		//TODO we can use front() and pop_front() instead of the iterator
 		ancestors.push(curr_node);
-		curr_node=curr_node->add_leaf(text.begin()+minit->first+lcp,text.begin()+minit->second);
-		curr_node->minimizers.push_back(minit->first);
+		curr_node=curr_node->add_leaf(text.begin()+next_string.first+lcp,text.begin()+next_string.second);
+		curr_node->minimizers.push_back(next_string.first);
 		curr_depth=lcp;
-		curr_string=*minit;
-		//TODO! leaf corresponding to 2 minimizers
+		curr_string=next_string;
 	}
-  
-  
- /*
-ATTAAAGGTATATACCTTCCCAGGTAACAAACCAACCAACTTTCGATCTCTTGTAGATCTGTTCTCTAAACGAACTTTAAAATCTGTGTGACTGTCACTC 
- 
-
-AAACCAACCAACTTTCGATCTCTTGTAGAT 3428
-4
-8867..8889 len=23
-AAACGAACTTTAAAATCTGTGTG 8867
-18
-10367..10389 len=23
-AAACGAACTTTAAAATCTTTGTG 10367
-3
-3928..3957 len=30
-AAATCAACCAACTTTCGATCTCTTGTAGAT 3928
-5
-9679..9699 len=21
-AAATCTGTGTGACTGTCACTC 9679
-11
-12279..12299 len=21
-AAATCTGTGTGGCTGTCACTC 12279
-6
-11179..11199 len=21
-AAATCTTTGTGACTGTCACTC 11179
-...
-
-10975..10999 len=25
-TTTAAAATCTTTGTGACTGTCACTC 10975
-15
-12675..12699 len=25
-TTTAAAATCTTTGTGGCTGTCACTC 12675
-4
-908..920 len=13
-TTTATACCTTCCC 908
-3
-4940..4984 len=45
-TTTCGATCTCTTGTAGATCTGTTCTCTAAACGAACTTTAAAATCT 4940
-18
-6740..6769 len=30
-TTTCGATCTCTTGTAGATTTGTTCTCTAAA 6740
-3
-7957..7969 len=13
-TTTGTTCTCTAAA 7957
-
-
-T
-CTGTTCTCTAAACGAACTTTAAAATCT
-TCTAAACGAACTTTAAAATCTGTGTG
-GTTCTCTAAA
-T
-A
-AAATCT
-GTGTG
-ACTGTCACTC
-GCTGTCACTC
-TTGTG
-ACTGTCACTC
-GCTGTCACTC
-TACCTTCCC
-CGATCTCTTGTAGAT
-TTGTTCTCTAAA
-CTGTTCTCTAAACGAACTTTAAAATCT
-GTTCTCTAAA
-
-------
-GTTCTCTAAA
-T
-A
-AAATCT
-GTGTG
-ACTGTCACTC
-GCTGTCACTC
-TTGTG
-ACTGTCACTC
-GCTGTCACTC
-TACCTTCCC
-
-CGATCTCTTGTAGAT
-CTGTTCTCTAAACGAACTTTAAAATCT
-TTGTTCTCTAAA
-GTTCTCTAAA
-
-
-*/
-
-
 }
 
 
-/*
-void PropertySuffixTree::process_property(const vector<int>& pi, std::vector<int> const& pos) {
-    vector<pair<Locus, int>> requests;
-    Locus cur = Locus(root, text.begin(), text.begin());
-	for(size_t j = 0; j < pos.size(); ++j){
-		size_t i = pos[j];
-		cur.node = root;
-		cur.begin = text.begin() + i;
-        cur.end = text.begin() + i + pi[i]+1;
-        cur.fast_forward();
-        requests.emplace_back(make_pair(cur, i));
-        //cur.node = cur.node->suf_link;
-    }
-    sort(requests.begin(), requests.end());
-    for (auto const &r : requests) {
-        auto loc = r.first;
-        int label = r.second;
-        loc.make_explicit();
-        loc.fast_forward();
-        loc.node->labels.push_back(label);
-    }
-    root->trim(true);
-}
 
-PropertySuffixTree::PropertySuffixTree(vector<int> const& S, HeavyString const& H, std::vector<int> const& pos) {
+
+PropertySuffixTree::PropertySuffixTree(HeavyString const& H, list<pair<size_t,size_t>> &min_substrings) {
 	text = H;
-    build_suffix_tree();
-    process_property(S,pos);
-}
-*/
-
-
-
-
-
-
-//new constructor for space efficient
-PropertySuffixTree::PropertySuffixTree(HeavyString const& H, list<pair<size_t,size_t>> min_substrings) {
-	text = H;
-	build_suffix_tree2(min_substrings);
+	build_suffix_tree(min_substrings);
 }
 
 
-/*
-void PropertySuffixTree::minimizer_trim(vector<int> const& property, std::vector<int> const& pos) {
-	for(auto i : pos){
-		Locus cur = Locus(root, text.begin()+i, text.begin()+i+property[i]);
-		cur.mark_forward();
-	}
-	root->keeper_trim();
-}
-*/
-PropertySuffixTree::Locus PropertySuffixTree::find(HeavyString &P) const {
-    PropertySuffixTree::Locus cur(root, P.begin(), P.begin());
-    cur.forward(P.end());
-    return cur;
-}
 
-bool PropertySuffixTree::contains(string const &s) const {
-	HeavyString P(s);
-    return (find(P).end == P.end());
-}
 
-vector<int> PropertySuffixTree::occurrences(string const& s) const {
-	HeavyString P(s);
-    PropertySuffixTree::Locus l = find(P);
-    vector<int> res;
-    if (l.end != P.end()) return res;
-    stNode* top = l.descendant();
-    top->listel(res);
-    return res;
-}
 
-pair<int,int> PropertySuffixTree::SAoccurrences(string const& s) const {
-	HeavyString P(s);
-    PropertySuffixTree::Locus l = find(P);
-    if (l.end != P.end()) return pair<int,int>(0,-1);
-	stNode* top = l.descendant();
-    return top->SAinterval;
+PropertySuffixTree::stNode* PropertySuffixTree::find(string const &P){
+	   int m=P.length(),depth=0;
+	   stNode* curr_node=root;
+	   while(depth<m){
+		   if(curr_node->children.find(P[depth])!=curr_node->children.end()){
+			   curr_node=curr_node->children[P[depth]];
+		   }else{//there is no child starting with the next letter
+			   return NULL;
+		   }
+		   if(m-depth<=curr_node->end-curr_node->begin){//P should end at this node, or in the middle of the edge leading to it
+			   if(P.substr(depth,m-depth)==text.substr(curr_node->begin-text.begin(),m-depth)){
+				   return curr_node;
+			   }else{//but it tried to exit the edge
+				   return NULL;
+			   }
+		   }else if(P.substr(depth,curr_node->end-curr_node->begin)!=text.substr(curr_node->begin-text.begin(),curr_node->end-curr_node->begin)){
+			   return NULL; //P tried to exit the edge which should have been read in full
+		   }
+		   depth+=curr_node->end-curr_node->begin;
+	   }
+		return curr_node; //this will be called only for an empty string P anyway
+   }
+
+
+void PropertySuffixTree::stNode::list_minimizers(vector<size_t>& l) const {
+    l.insert(l.end(), minimizers.begin(), minimizers.end());
+    for (auto const &p : children) p.second->list_minimizers(l);
 }
 
 
-PropertySuffixTree::~PropertySuffixTree() {
-    delete root->suf_link;
-    delete root;
-}
-
-int PropertySuffixTree::number_of_nodes(){
-	int non = 0;
-	stack<stNode*> stack;
-	stNode* w;
-	stack.push(root);
-	while(!stack.empty()){
-		w = stack.top();
-		non ++;
-		stack.pop();
-		for(auto it = w->children.begin(); it != w->children.end(); it ++){
-			stack.push(it->second);
+vector<pair<int,double>> PropertySuffixTree::occurrences(string const& P){
+	vector<pair<int,double>> res;	
+	PropertySuffixTree::stNode* node = find(P);
+	if(node!=NULL){
+		vector<size_t> l;
+		node->list_minimizers(l);
+		for(vector<size_t>::iterator el=l.begin();el!=l.end();++el){
+			res.push_back(make_pair((*el)%text.n,text.substr_weight(*el,P.length())));
 		}
 	}
-	return non;
+	return res;
 }
-
-
-std::ostream& operator<< (std::ostream &out, PropertySuffixTree const &st) {
-    st.root->print(out, -1);
-    return out;
-}
-
-std::vector<int> PropertySuffixTree::toSA(){
-	stNode* cur;
-	stack<stNode*> Q;
-	Q.push(root);
-	vector<int> SA;
-	stack<stNode*> dfs_order;
-	
-	while(!Q.empty()){
-		cur = Q.top();
-		dfs_order.push(cur);
-		Q.pop();
-		if( cur != root){
-			cur->SAinterval.first = SA.size();
-			SA.insert(SA.end(), cur->labels.begin(), cur->labels.end());
-			cur->SAinterval.second = SA.size()-1;
-		}
-		
-		if(!cur->children.empty()){
-			vector<pair<char, stNode*>> children(cur->children.begin(), cur->children.end());
-			sort(children.begin(), children.end(), [this](std::pair<char, stNode*> a, std::pair<char, stNode*> b) {return a.first > b.first;});
-			for(auto c : children){
-				Q.push(c.second);
-			}
-		}
-	}
-	
-	while(!dfs_order.empty()){
-		cur = dfs_order.top();
-		dfs_order.pop();
-		
-		int right = cur->SAinterval.second;
-		
-		if(!cur->children.empty()){
-			vector<pair<char, stNode*>> children(cur->children.begin(), cur->children.end());
-			for(auto c : children){
-				if(right < c.second->SAinterval.second)
-					right = c.second->SAinterval.second;
-			}
-		}
-		cur->SAinterval.second = right;
-	}		
-
-	return SA;
-}
-
-double PropertySuffixTree::get_pi(int i, int begin, int length){
-	return text.get_pi(i, begin, length);
-}
-
-
-double PropertySuffixTree::naive_check(string const & pat, int p_begin, int t_begin, int length, int c){
-	for(int i = 0; i < length; i++){
-		if(pat[p_begin + i] != text[t_begin+i]){
-			return 0;
-		}
-	}
-	return text.get_pi(c,t_begin, length);
-}
-
 
 void PropertySuffixTree::dfs() {
     stack<stNode*> s;

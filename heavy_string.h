@@ -21,152 +21,41 @@ class HeavyString{
 	std::unordered_map<size_t, double> delta_pi;
 	std::unordered_map<size_t, std::vector<int>> alt_pos;
 	std::unordered_map<size_t, std::pair<int, int>> alt_ext;
-	std::vector<double> pi_suf;
-	size_t n;
-	size_t N;
+	std::vector<double> pi_prefix;
 
 	public:
+	size_t n;
+	size_t N;
 	HeavyString(){};
 	
-	//TODO generally unused
-	HeavyString(std::vector<std::vector<double>>& P, std::string const& S, std::string& A) 
-		: n(P.size()), N(S.size()) {
-			if (n == 0 || N == 0) {
-				throw std::invalid_argument("P and S cannot be empty.");
-			}
 
-			for(size_t i = 0; i < n; i++){
-				size_t which_max = max_element(P[i].begin(), P[i].end()) - P[i].begin();
-				H+=(A[which_max]);
-			}		
-			for(size_t i = 0; i < N; i++){
-				if(S[i] != H[i%n]){
-					if (A.find(S[i]) == std::string::npos) {
-						throw std::invalid_argument("S contains a character not in A.");
-					}
-					_alt[i] = S[i];
-				}
-			}
-		}
-	
-	//TODO generally unused
-	HeavyString(std::string const& S): n(S.size()), N(S.size()){
-			H = S;
-	}
-	
-	
-	HeavyString(std::vector<std::vector<double>>& P, std::string const& S,list<pair<size_t,size_t>> min_list,list<list<pair<int,char>>> diffs){
+	HeavyString(std::vector<std::vector<double>>& P, std::string const& S,std::string& A, list<pair<size_t,size_t>>& min_list,list<list<pair<int,char>>>& diffs,vector<double>& pi_pref){
 			H = S;
 			n=S.size();
 			N= n* min_list.size();
-			std::vector<double> pi_arr;
-			for(size_t i = 0; i < n; i++){
-				double pi = log2(P[i][H[i]]);
-				pi_arr.push_back(pi);
-			}
-			pi_suf.assign(pi_arr.begin(), pi_arr.end());
-			for(int i = n-2; i >= 0; i--){
-				pi_suf[i] += pi_suf[i+1];
+			pi_prefix=pi_pref;
+			//cout <<endl;
+			list<pair<int,char>> diff;
+			double pi_arr[n];
+			pi_arr[0]=pi_prefix[0];
+			for( int i=1;i<n;++i){
+				pi_arr[i]=pi_prefix[i]-pi_prefix[i-1];
 			}
 			int i=0;
 			list<pair<size_t,size_t>>::iterator minit=min_list.begin();
-			for(list<list<pair<int,char>>>::iterator diffit=diffs.begin(); diffit!=diffs.end();++diffit){
-				for(list<pair<int,char>>::iterator el=diffit->begin();el!=diffit->end();++el){
-					double this_pi = log2(P[el->first][el->second]);
+			for(list<pair<size_t,size_t>>::iterator minit=min_list.begin(); minit!=min_list.end();++minit){
+				diff=diffs.front();
+				diffs.pop_front();
+				for(list<pair<int,char>>::iterator el=diff.begin();el!=diff.end();++el){
+					double this_pi = log2(P[el->first][A.find(el->second)]);
 					_alt[i*n+el->first]=el->second;
 					alt_pos[minit->first].push_back(i*n+el->first);
 					delta_pi[i*n+el->first] =  this_pi - pi_arr[el->first];	
 				}
 				++i;
-				minit++;
 			}
 	}	
 	
-	/*HeavyString(std::vector<std::vector<double>>& P, std::string const& S, list<pair<int,list<pair<int, char>>>> min_list){
-			H = S;
-			n=S.size();
-			N= n* min_list.size();
-			std::vector<double> pi_arr;
-			for(size_t i = 0; i < n; i++){
-				double pi = log2(P[i][H[i]]);
-				pi_arr.push_back(pi);
-			}
-			pi_suf.assign(pi_arr.begin(), pi_arr.end());
-			for(int i = n-2; i >= 0; i--){
-				pi_suf[i] += pi_suf[i+1];
-			}
-			int i=0;
-			for(list<pair<int,list<pair<int, char>>>>::iterator minit=min_list.begin(); minit!=min_list.end();++minit){
-				for(list<pair<int,char>>::iterator el=minit->second.begin();el!=minit->second.end();++el){
-					double this_pi = log2(P[el->first][el->second]);
-					_alt[i*n+el->first]=el->second;
-					alt_pos[i*n+minit->first].push_back(i*n+el->first);
-					delta_pi[i*n+el->first] =  this_pi - pi_arr[el->first];	
-				}
-				++i;
-			}
-	}*/
-	
-	/*HeavyString(std::vector<std::vector<double>>& P,  std::string const& S, std::string& A, std::vector<int> min_pos, std::vector<int> le, std::vector<int> re, bool create_pi){
-		n = P.size();
-		N = S.size();
-		if (n == 0 || N == 0) {
-			throw std::invalid_argument("P and S cannot be empty.");
-		}
-		
-		std::vector<double> pi_arr;
-		
-		for(size_t i = 0; i < n; i++){
-			int which_max = max_element(P[i].begin(), P[i].end()) - P[i].begin();
-			H+=(A[which_max]);
-			double pi = log2(P[i][which_max]);
-			pi_arr.push_back(pi);
-		}		
-		
-		if(create_pi){				
-			pi_suf.assign(pi_arr.begin(), pi_arr.end());
-			for(int i = n-2; i >= 0; i--){
-				pi_suf[i] += pi_suf[i+1];
-			}
-		}
-		
-		for(int m : min_pos){
-			int begin = m - le[m];
-			int end = m + re[m] + 1;
-			alt_ext[m].first = le[m];
-			alt_ext[m].second = re[m];
-			for(int i = begin; i < end; i++){
-				int h = i%n;
-				if(H[h] != S[i]){
-					double this_pi = log2(P[h][A.find(S[i])]);
-					_alt[i] = S[i];
-					alt_pos[m].push_back(i);
-					delta_pi[i] =  this_pi - pi_arr[h];
-				}
-			}
-		}
-	}*/
-
-	//HeavyString(const HeavyString& other): H(other.H), _alt(other._alt), n(other.n), N(other.N) {}
-
-	HeavyString& operator=(const HeavyString& other) {
-		if (this != &other) {
-			H = other.H;
-			n = other.n;
-			N = other.N;
-			pi_suf.assign(other.pi_suf.begin(), other.pi_suf.end());
-			std::unordered_map<size_t, char>temp1(other._alt);
-			std::unordered_map<size_t, double>temp2(other.delta_pi);
-			std::unordered_map<size_t, std::vector<int>> temp3(other.alt_pos);
-			std::unordered_map<size_t, std::pair<int, int>> temp4(other.alt_ext);
-			std::swap(_alt, temp1);
-			std::swap(delta_pi, temp2);
-			std::swap(alt_pos, temp3);
-			std::swap(alt_ext, temp4);
-		}
-		return *this;
-	}
-
 	char& operator[](size_t i) { 
 		if (i >= N) {
 			throw std::out_of_range("Index out of range.");
@@ -228,37 +117,27 @@ class HeavyString{
 	}
 	
 	
-	double get_pi(int i, int begin, int length){
-		if(begin%n > i%n)			return 0;
-		if(begin%n + length > n)	return 0;
-		if( i - alt_ext[i].first > begin ) return 0;
-		if( i + alt_ext[i].second < begin + length - 1 ) return 0;
-				
-		int end = begin + length;
-		
-		double cum_pi = pi_suf[begin%n] - pi_suf[end%n];
-		
-		std::vector<int>& v = alt_pos[i];
-		if(v.empty()){
-			return pow(2,cum_pi);
-		}else{
-			for(auto j : v){
-				if(j >= begin && j < end){					
-					cum_pi += delta_pi[j];
-				}
-			}
-			return pow(2,cum_pi);
+	
+	double substr_weight(size_t pos, size_t len){
+		if (pos >= N || len == 0) {
+			return 1;
 		}
+		double weight;
+		if(pos%n!=0){
+			weight = pi_prefix[pos%n+len-1]-pi_prefix[pos%n-1];
+		}else{
+			weight=pi_prefix[pos%n+len-1];
+		}
+		//cout<<"base weight: " <<weight<<endl;
+		for(size_t i = 0; i < len; i++){
+			if(_alt.count(pos+i)){
+				weight+= delta_pi.at(pos+i);
+				//cout<< "modified at pos "<< pos+i<< " by "<<delta_pi.at(pos+i)<<endl;
+			}
+		}
+		return weight;
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
-		for(auto i = 0; i < length; i++){
-			if(pat[pat_begin + i] != this->at(txt_begin+i)){
-				return 0;
-			}
-		}
-		return this->get_pi(min_pos,txt_begin, length);
-	}
 	
 	size_t le(size_t i){
 		return alt_ext[i].first;
