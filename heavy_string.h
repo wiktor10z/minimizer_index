@@ -33,24 +33,31 @@ class HeavyString{
 			H = S;
 			n=S.size();
 			N= n* min_list.size();
+			//cout<< "trying to copy pi pref"<<endl;
 			pi_prefix=pi_pref;
+			//cout <<"copy made"<<endl;
 			//cout <<endl;
 			list<pair<int,char>> diff;
-			double pi_arr[n];
-			pi_arr[0]=pi_prefix[0];
-			for( int i=1;i<n;++i){
-				pi_arr[i]=pi_prefix[i]-pi_prefix[i-1];
+			vector<double> pi_arr;
+			//cout<< "array created"<<endl;
+			pi_arr.push_back(pi_prefix[0]);
+			//cout <<"pi_prefix range "<<pi_prefix[n-1]<<endl;
+			for(int i=1;i<n;++i){
+				//cout <<"pi arr computation "<< i <<endl;
+				pi_arr.push_back(pi_prefix[i]-pi_prefix[i-1]);
 			}
-			int i=0;
+			//cout<< "pi array built"<<endl;
+			size_t i=0;
 			list<pair<size_t,size_t>>::iterator minit=min_list.begin();
 			for(list<pair<size_t,size_t>>::iterator minit=min_list.begin(); minit!=min_list.end();++minit){
+				//cout <<"storing minimizer "<< i <<endl;
 				diff=diffs.front();
 				diffs.pop_front();
 				for(list<pair<int,char>>::iterator el=diff.begin();el!=diff.end();++el){
 					double this_pi = log2(P[el->first][A.find(el->second)]);
-					_alt[i*n+el->first]=el->second;
-					alt_pos[minit->first].push_back(i*n+el->first);
-					delta_pi[i*n+el->first] =  this_pi - pi_arr[el->first];	
+					_alt[i*n+(size_t)el->first]=el->second;
+					alt_pos[minit->first].push_back(i*n+(size_t)el->first);
+					delta_pi[i*n+(size_t)el->first] =  this_pi - pi_arr[el->first];	
 				}
 				++i;
 			}
@@ -94,7 +101,6 @@ class HeavyString{
 
 		return substring;
 	}
-	
 	
 	struct Heavycompare : std::binary_function<pair<size_t,size_t>, pair<size_t,size_t>,bool>
 	{

@@ -204,7 +204,7 @@ void MinimizerIndex::build_index(double z, int l){
 			}
 		}
 	}
-	
+	//cout<< "the set of minimizer solid factors computed"<<endl;
 	
 	//cout << minimizer_strings_before_pruning.size() << " minimizers"<<endl;
 	//for(list<pair<int,list<pair<int, char>>>>::iterator minit = minimizer_strings_before_pruning.begin(); minit!=minimizer_strings_before_pruning.end();++minit){
@@ -216,9 +216,8 @@ void MinimizerIndex::build_index(double z, int l){
 	//}
 	
 	
-	
+	/*
 	//list of minimizer nodes with diffrences lists
-	/* 
 	cout << minimizer_substrings.size() << " minimizers"<<endl;
 	list<list<pair<int,char>>>::iterator diffit=global_diff.begin();
 	for(list<pair<size_t,size_t>>::iterator minit = minimizer_substrings.begin(); minit!=minimizer_substrings.end();++minit){
@@ -230,11 +229,13 @@ void MinimizerIndex::build_index(double z, int l){
 		diffit++;
 	}
 	*/
+	//cout << "starting to build the heavy tree"<<endl;
 	
 	HeavyString text=HeavyString(fP,H,alph,minimizer_substrings,global_diff,pi_prefix);
 	global_diff.clear();
 	//at this point minimizer_substrings stores the beginnings and endings of the strings that should be included in the reversed trie, while text stores their contents.
 	
+	//cout<<"heavy string constructed"<<endl;
 	
 	minimizer_substrings.sort(HeavyString::Heavycompare(&text));
 	//at this point the minimizer_substrings are sorted alphabetically.

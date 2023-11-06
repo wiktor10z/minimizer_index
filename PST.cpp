@@ -143,7 +143,7 @@ vector<pair<int,double>> PropertySuffixTree::occurrences(string const& P){
 		vector<size_t> l;
 		node->list_minimizers(l);
 		for(vector<size_t>::iterator el=l.begin();el!=l.end();++el){
-			res.push_back(make_pair((*el)%text.n,text.substr_weight(*el,P.length())));
+			res.push_back(make_pair((int)((*el)%text.n),text.substr_weight(*el,P.length())));
 		}
 	}
 	return res;
