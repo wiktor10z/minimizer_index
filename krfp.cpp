@@ -56,6 +56,7 @@ namespace karp_rabin_hashing {
 //=============================================================================
 std::uint64_t hash_variable;
 std::uint64_t mersenne_prime_exponent;
+std::uint64_t inverse;
 
 //=============================================================================
 // Return (a * b) mod p, where p = (2^k) - 1.
@@ -187,12 +188,36 @@ std::uint64_t subtract(
     ((long_hash + p) - tmp);
 }
 
+
+std::uint64_t leftshift(const std::uint64_t hash){
+	return mul_mod_mersenne(hash, inverse, mersenne_prime_exponent);
+}
+
+
+//computation of the inverse of hash_variable
+void compute_inverse(){
+	inverse=1;
+	std::uint64_t multip;
+	std::uint64_t p = ((std::uint64_t)1 << mersenne_prime_exponent) - 1;
+	std::uint64_t a = hash_variable;
+	while(a!=1){
+		multip = p/a;
+		multip=mul_mod_mersenne(multip, p-1,mersenne_prime_exponent);
+		inverse =mul_mod_mersenne(inverse,multip,mersenne_prime_exponent);
+		a=p%a;
+	}
+}
+
+
+
+
 //=============================================================================
 // Initialize the base and exponent for Karp-Rabin hashing.
 //=============================================================================
 void init() {
   mersenne_prime_exponent = 61; //do not change this
   hash_variable = rand_mod_mersenne(mersenne_prime_exponent);
+  compute_inverse();
 }
 }
 

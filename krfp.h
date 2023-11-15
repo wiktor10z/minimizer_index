@@ -54,6 +54,8 @@ std::uint64_t concat(const std::uint64_t lhash,
     const std::uint64_t rhash, const std::uint64_t rlen);
 std::uint64_t subtract(const std::uint64_t long_hash, 
 const std::uint64_t short_hash, const std::uint64_t right_len);
+std::uint64_t leftshift(const std::uint64_t hash);
+void compute_inverse();
 void init();
 
 //=============================================================================

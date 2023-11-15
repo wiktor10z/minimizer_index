@@ -5,11 +5,80 @@
 #include <sstream>
 #include <cstring>
 #include <deque>
+#include <set>
 #include "krfp.h"
 #include "minimizers.h"
 
 using namespace std;
 typedef uint64_t INT;  
+
+
+MinimizerHeap::MinimizerHeap(uint64_t n1, uint64_t l1, uint64_t k1){
+	n=n1;
+	l=l1;
+	k=k1;
+	len=0;
+	S="";
+	lefthash=0;
+	righthash=0;
+	letter_k=0;
+	for(uint64_t i;i<k-1;++i){
+		letter_k=karp_rabin_hashing::concat(0,letter_k,k-i+1);
+	}
+	letter_k=karp_rabin_hashing::concat(letter_k,'A',1);
+}
+
+uint64_t MinimizerHeap::top(){
+	return heap.begin()->second;
+}
+
+
+void MinimizerHeap::left(char a){
+	S.insert(0, 1, a); // TODO maybe we can store S only here
+	lefthash =  karp_rabin_hashing::concat( a, lefthash , min(k,S.length()-1));	
+	if(S.length()>k){
+		lefthash = karp_rabin_hashing::subtract(lefthash, S[k] , 0 );
+		lefthash = karp_rabin_hashing::leftshift(lefthash); 	
+		heap.insert(make_pair(lefthash,n-S.length()));
+	}else if(S.length()==k){
+		heap.insert(make_pair(lefthash,n-S.length()));
+	}
+	if(S.length()> l){
+
+		heap.erase(heap.find(make_pair(righthash,n-S.length()+l-k+1)));
+		righthash = karp_rabin_hashing::concat(S[l-k], righthash, k);
+		righthash = karp_rabin_hashing::subtract(righthash, S[l] , 0 );
+		righthash = karp_rabin_hashing::leftshift(righthash);
+	}
+	if(S.length()<=k){
+		righthash=lefthash;
+	}
+}
+
+void MinimizerHeap::right(){
+	if(heap.size()>0){
+		heap.erase(heap.find(make_pair(lefthash,n-S.length())));
+	}
+	if(S.length()>k){
+		lefthash = karp_rabin_hashing::concat(lefthash,S[k],1);
+		lefthash = karp_rabin_hashing::subtract(lefthash, S[0] , k);		
+	}else{
+		lefthash = karp_rabin_hashing::concat(lefthash,' ',0);
+		lefthash = karp_rabin_hashing::subtract(lefthash, S[0] , k );
+		righthash = lefthash;
+	}
+	if(S.length()>l){
+		righthash = karp_rabin_hashing::concat(righthash,S[l],1);
+		righthash = karp_rabin_hashing::subtract(righthash, S[l-k] , k );
+		heap.insert(make_pair(righthash,n-S.length()+l-k+1));		
+	}
+	S = S.substr(1);
+}
+
+
+
+
+
 
 /* Computes the minimizers of a string of length n in O(n) time */
 INT compute_minimizers(  string& text, INT w, INT k, unordered_set<uint64_t> &minimizers )

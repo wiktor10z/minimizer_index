@@ -131,13 +131,16 @@ void MinimizerIndex::build_index(double z, int l){
 	int n = fP.size();
 	list<pair<size_t,size_t>> minimizer_substrings;
 	size_t minimizer_count=0;
+	
+	MinimizerHeap heap(n,l,k);
+	
 	//cout<< pi_prefix[n-1]<<endl;
 	for(int i = 0; i < alph.size(); i++){
 		amap[alph[i]] = i;
 	}
 	
 	string S;
-	double p = 1;
+	double p = 1.0;
 	int a = n-1;
 	unordered_set<int> minimizers;
 	list<pair<int, char>> diff;
@@ -159,6 +162,7 @@ void MinimizerIndex::build_index(double z, int l){
 				pos1 = a;
 			}
 			S.insert(0, 1, alph[sig]);
+			heap.left(alph[sig]);
 			if(H[a] != alph[sig]){
 				diff.push_front(make_pair(a, alph[sig]));
 			}
@@ -171,7 +175,11 @@ void MinimizerIndex::build_index(double z, int l){
 				}
 				if(pi_cum * z >= 1){
 					string prefixS = S.substr(0,l);
-					minimizers.insert(a+ pattern_minimizers(prefixS, k));
+					minimizers.insert(heap.top());
+					//minimizers.insert(a+ pattern_minimizers(prefixS, k));
+					//if(heap.top()!=a+ pattern_minimizers(prefixS, k)){
+					//	cout << heap.top() <<" "<< a+ pattern_minimizers(prefixS, k)<<endl;
+					//}
 				}
 			}
 			a = a - 1;
@@ -194,13 +202,14 @@ void MinimizerIndex::build_index(double z, int l){
 			}
 			if(!isEqual(p,1)){
 				p /= fP[a][amap[S[0]]];
-				if(p>0.7) p=1.0;
+				if(p>0.7) p=1.0; //fixing p in case of precision errors (p cannot be between 0.5 and 1, hence p>0.7 means p=1)
 			}else{
 				pos1=a+1;
 			}
 			if(S.length() > 0){
 				sig1 = amap[S[0]];
 				S = S.substr(1);
+				heap.right();
 			}
 		}
 	}
