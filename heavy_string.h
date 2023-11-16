@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <vector>
 #include <list>
+#include <map>
 #include <utility>
 #include <string>
 #include <algorithm>
@@ -17,7 +18,7 @@ using namespace std;
 
 class HeavyString{
 	std::string H;
-	std::unordered_map<size_t, char> _alt;
+	std::map<size_t, char> _alt;
 	std::unordered_map<size_t, double> delta_pi;
 	std::unordered_map<size_t, std::vector<int>> alt_pos;
 	std::unordered_map<size_t, std::pair<int, int>> alt_ext;
@@ -93,11 +94,16 @@ class HeavyString{
 		}
 		std::string substring = H.substr(pos%n, len);
 
-		for(size_t i = 0; i < len; i++){
-			if(_alt.count(pos+i)){
-				substring[i] = _alt.at(pos+i);
-			}
+		map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
+		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+			substring[alt_iter->first-pos]=alt_iter->second;
+			++alt_iter;
 		}
+		//for(size_t i = 0; i < len; i++){
+		//	if(_alt.count(pos+i)){
+				//substring[i] = _alt.at(pos+i);
+		//	}
+		//}
 
 		return substring;
 	}
@@ -106,16 +112,16 @@ class HeavyString{
 	{
 		Heavycompare(HeavyString *h) : _Heavy1(h) {}
 		bool operator() (const pair<size_t,size_t> &min_str1, const pair<size_t,size_t> &min_str2){
-			string str1=_Heavy1->substr(min_str1.first,min_str1.second-min_str1.first+1);
-			string str2=_Heavy1->substr(min_str2.first,min_str2.second-min_str2.first+1);
+			string str1=_Heavy1->substr(min_str1.first,min_str1.second-min_str1.first);
+			string str2=_Heavy1->substr(min_str2.first,min_str2.second-min_str2.first);
 			return (str2.compare(str1)>0);
 		}
 		    HeavyString * _Heavy1;
 	};
 	
 	int LCP(pair<size_t,size_t> min_str1,pair<size_t,size_t> min_str2){ //TODO maybe we can make faster LCP provided an LCP on the Heavy string  - here it is done in time linear to the string lengths
-		string str1=substr(min_str1.first,min_str1.second-min_str1.first+1);
-		string str2=substr(min_str2.first,min_str2.second-min_str2.first+1);
+		string str1=substr(min_str1.first,min_str1.second-min_str1.first);
+		string str2=substr(min_str2.first,min_str2.second-min_str2.first);
 		int len=min(str1.length(),str2.length());
 		int i=0;
 		while((i<len)&&(str1[i]==str2[i])) ++i;

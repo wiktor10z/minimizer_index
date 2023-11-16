@@ -64,7 +64,7 @@ void PropertySuffixTree::build_suffix_tree(list<pair<size_t,size_t>>& min_substr
     int lcp;
     stack<stNode*> ancestors;
 	curr_node=root;
-	curr_string=make_pair(0,-1); 
+	curr_string=make_pair(0,0); 
 	curr_depth=-1;
 	//for(list<pair<size_t,size_t>>::iterator minit=min_substrings.begin();minit!=min_substrings.end();++minit){
 	while(min_substrings.size()>0){

@@ -4,6 +4,8 @@
 #include <set>
 #include <map>
 #include <list>
+#include <chrono>
+#include <ctime>
 #include <functional> 
 #include "minimizer_index.h"
 #include "minimizers.h"
@@ -12,6 +14,7 @@
 #include "PST.h"
 
 using namespace std;
+using get_time = chrono::steady_clock;
 
 bool isEqual(double a, double b) {
 	double epsilon = 1e-14;
@@ -127,6 +130,7 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 
 
 void MinimizerIndex::build_index(double z, int l){
+	//auto begin = get_time::now();
 	int k = ceil(4*log2(l) / log2(alph.size()));
 	int n = fP.size();
 	list<pair<size_t,size_t>> minimizer_substrings;
@@ -242,14 +246,24 @@ void MinimizerIndex::build_index(double z, int l){
 	}
 	*/
 	//cout << "starting to build the heavy tree"<<endl;
+	//auto end = get_time::now();
+	//auto diff2 = end - begin;
+	//cout << "Lemma 13 time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
+	//begin = get_time::now();
 	
 	HeavyString text=HeavyString(fP,H,alph,minimizer_substrings,global_diff,pi_prefix);
 	global_diff.clear();
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "building heavy string time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	//at this point minimizer_substrings stores the beginnings and endings of the strings that should be included in the reversed trie, while text stores their contents.
 	
 	//cout<<"heavy string constructed"<<endl;
-	
+	//begin = get_time::now();
 	minimizer_substrings.sort(HeavyString::Heavycompare(&text));
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "sorting time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	//at this point the minimizer_substrings are sorted alphabetically.
 		
 	
@@ -269,7 +283,11 @@ void MinimizerIndex::build_index(double z, int l){
 	*/
 	
 	//cout<< "start building tree"<<endl;
+	//begin = get_time::now();
 	forward_index = new PropertySuffixTree(text, minimizer_substrings);
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "buiding time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	//cout<<"finish building tree"<<endl;
 	//forward_index->dfs();
 	
