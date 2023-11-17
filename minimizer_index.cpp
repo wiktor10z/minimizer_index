@@ -167,7 +167,7 @@ void MinimizerIndex::build_index(double z, int l){
 				pos1 = a;
 			}
 			//S.insert(0, 1, alph[sig]);
-			S.push_back(alph[sig]);
+			//S.push_back(alph[sig]);
 			heap.left(alph[sig]);
 			if(H[a] != alph[sig]){
 				diff.push_front(make_pair(a, alph[sig]));
@@ -207,15 +207,15 @@ void MinimizerIndex::build_index(double z, int l){
 				}
 			}
 			if(!isEqual(p,1)){
-				p /= fP[a][amap[S[S.size()-1]]];
+				p /= fP[a][amap[heap.S[heap.S.size()-1]]];
 				if(p>0.7) p=1.0; //fixing p in case of precision errors (p cannot be between 0.5 and 1, hence p>0.7 means p=1)
 			}else{
 				pos1=a+1;
 			}
 			if(S.size() > 0){
-				sig1 = amap[S[S.size()-1]];
+				sig1 = amap[heap.S[heap.S.size()-1]];
 				//S = S.substr(1);
-				S.pop_back();
+				//S.pop_back();
 				heap.right();
 			}
 		}
@@ -252,7 +252,8 @@ void MinimizerIndex::build_index(double z, int l){
 	//begin = get_time::now();
 	
 	HeavyString text=HeavyString(fP,H,alph,minimizer_substrings,global_diff,pi_prefix);
-	global_diff.clear();
+
+	//global_diff.clear();
 	//end = get_time::now();
 	//diff2 = end - begin;
 	//cout << "building heavy string time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
