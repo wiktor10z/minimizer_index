@@ -172,7 +172,7 @@ void MinimizerIndex::build_index(double z, int l){
 			if(H[a] != alph[sig]){
 				diff.push_front(make_pair(a, alph[sig]));
 			}
-			if(S.size() >= l){
+			if(heap.S.size() >= l){
 				double pi_cum = 1;
 				if( pos1 <= 0 ){	
 					pi_cum = pow(2,pi_prefix[l]);	//if full length S is the heavy string and reach the beginning, directly use pi prefix
@@ -212,7 +212,7 @@ void MinimizerIndex::build_index(double z, int l){
 			}else{
 				pos1=a+1;
 			}
-			if(S.size() > 0){
+			if(heap.S.size() > 0){
 				sig1 = amap[heap.S[heap.S.size()-1]];
 				//S = S.substr(1);
 				//S.pop_back();
