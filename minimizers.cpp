@@ -79,7 +79,25 @@ void MinimizerHeap::right(){
 
 
 
-
+uint64_t linear_minimizer(vector<char>& S, uint64_t l, uint64_t k){
+	
+	INT fp = 0;
+	for(INT j = 0; j<k; j++)
+		fp =  karp_rabin_hashing::concat( fp, S[S.size()-1-j] , 1 );
+	INT pos = 1;
+	INT min_fp = fp;
+	INT minimizers = 0;
+	for(INT j = 1; j<=l-k; j++)
+	{
+		fp = karp_rabin_hashing::concat( fp, S[S.size()-j-k] , 1 );
+		fp = karp_rabin_hashing::subtract( fp, S[S.size()-j] , k );
+		if(fp < min_fp){
+			min_fp = fp;
+			minimizers = j;
+		}
+	}
+	return minimizers;
+}
 
 
 /* Computes the minimizers of a string of length n in O(n) time */
@@ -150,16 +168,14 @@ INT compute_minimizers(  string& text, INT w, INT k, unordered_set<uint64_t> &mi
 INT pattern_minimizers(string& text,INT k)
 {
 	INT n = text.length();
+	
+	/*
 	INT fp = 0;
-	INT smallest_fp = fp;
-	
-	INT * FP = ( INT * ) malloc( ( n - k + 1  ) *  sizeof( INT ) );
-	
+		
 	for(INT j = 0; j<k; j++)
 		fp =  karp_rabin_hashing::concat( fp, text[j] , 1 );
 		
-	FP[0] = fp;
-	INT pos = 1;
+	//FP[0] = fp;
 	//cout<<fp<<endl;
 	INT min_fp = fp;
 	INT minimizers = 0;
@@ -170,21 +186,26 @@ INT pattern_minimizers(string& text,INT k)
 		fp = karp_rabin_hashing::concat( fp, text[j+k-1] , 1 );
 		fp = karp_rabin_hashing::subtract( fp, text[j-1] , k );
 		
-		//cout<<fp<<endl;
-		FP[pos] = fp;
-		pos++;
-	}	
-	
-		
-	// minimum fp in first window
-   	for (INT j = 0; j <= n - k ; j++) 
-   	{
-		if(FP[j] < min_fp){
-			min_fp = FP[j];
+		if(fp < min_fp){
+			min_fp = fp;
+			minimizers = j;
+		}		
+	}
+	*/
+	INT fp=0;
+	for(INT j = n-k; j<n; j++)
+		fp =  karp_rabin_hashing::concat( fp, text[j] , 1 );	
+	INT min_fp = fp;
+	INT minimizers = n-k;	
+	for(int j=n-k-1;j>=0;j--){
+		fp = karp_rabin_hashing::concat(text[j], fp, k);
+		fp = karp_rabin_hashing::subtract(fp, text[j+k] , 0 );
+		fp = karp_rabin_hashing::leftshift(fp);
+		if(fp <= min_fp){
+			min_fp = fp;
 			minimizers = j;
 		}
- 	}
+	}
 	
-	free( FP );
 	return minimizers;
 }

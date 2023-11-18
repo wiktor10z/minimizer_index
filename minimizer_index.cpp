@@ -143,8 +143,7 @@ void MinimizerIndex::build_index(double z, int l){
 		amap[alph[i]] = i;
 	}
 	
-	//string S;
-	vector<char> S;
+	//vector<char> S;
 	double p = 1.0;
 	int a = n-1;
 	unordered_set<int> minimizers;
@@ -166,13 +165,13 @@ void MinimizerIndex::build_index(double z, int l){
 			}else{
 				pos1 = a;
 			}
-			//S.insert(0, 1, alph[sig]);
 			//S.push_back(alph[sig]);
 			heap.left(alph[sig]);
 			if(H[a] != alph[sig]){
 				diff.push_front(make_pair(a, alph[sig]));
 			}
 			if(heap.S.size() >= l){
+			//if(S.size() >= l){
 				double pi_cum = 1;
 				if( pos1 <= 0 ){	
 					pi_cum = pow(2,pi_prefix[l]);	//if full length S is the heavy string and reach the beginning, directly use pi prefix
@@ -180,11 +179,11 @@ void MinimizerIndex::build_index(double z, int l){
 					pi_cum = p * pow(2, pi_prefix[a+l-1] - pi_prefix[pos1-1]);
 				}
 				if(pi_cum * z >= 1){
-					//string prefixS = S.substr(0,l);
+					//vector<char> prefS(S.begin()+S.size()-l-1,S.end());
 					minimizers.insert(heap.top());
-					//minimizers.insert(a+ pattern_minimizers(prefixS, k));
-					//if(heap.top()!=a+ pattern_minimizers(prefixS, k)){
-					//	cout << heap.top() <<" "<< a+ pattern_minimizers(prefixS, k)<<endl;
+					//minimizers.insert(a+ linear_minimizer(prefS, l, k));
+					//if(heap.top()!=a+ linear_minimizer(prefS, l, k)){
+					//	cout << heap.top() <<" "<< a+ linear_minimizer(prefS, l, k)<<endl;
 					//}
 				}
 			}
@@ -208,13 +207,15 @@ void MinimizerIndex::build_index(double z, int l){
 			}
 			if(!isEqual(p,1)){
 				p /= fP[a][amap[heap.S[heap.S.size()-1]]];
+				//p /= fP[a][amap[S[S.size()-1]]];
 				if(p>0.7) p=1.0; //fixing p in case of precision errors (p cannot be between 0.5 and 1, hence p>0.7 means p=1)
 			}else{
 				pos1=a+1;
 			}
 			if(heap.S.size() > 0){
 				sig1 = amap[heap.S[heap.S.size()-1]];
-				//S = S.substr(1);
+			//if(S.size() > 0){
+				//sig1 = amap[S[S.size()-1]];
 				//S.pop_back();
 				heap.right();
 			}

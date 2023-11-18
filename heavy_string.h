@@ -18,10 +18,10 @@ using namespace std;
 
 class HeavyString{
 	std::string H;
-	std::map<size_t, char> _alt;
+	std::map<size_t, char> _alt; //here we use map, as elements when multiple elements are accessed they are often close in the structure - the difference in time is noticable
 	std::unordered_map<size_t, double> delta_pi;
-	std::unordered_map<size_t, std::vector<int>> alt_pos;
-	std::unordered_map<size_t, std::pair<int, int>> alt_ext;
+	//std::unordered_map<size_t, std::vector<int>> alt_pos;
+	//std::unordered_map<size_t, std::pair<int, int>> alt_ext;
 	std::vector<double> pi_prefix;
 
 	public:
@@ -57,7 +57,7 @@ class HeavyString{
 				for(list<pair<int,char>>::iterator el=diff.begin();el!=diff.end();++el){
 					double this_pi = log2(P[el->first][A.find(el->second)]);
 					_alt[i*n+(size_t)el->first]=el->second;
-					alt_pos[minit->first].push_back(i*n+(size_t)el->first);
+					//alt_pos[minit->first].push_back(i*n+(size_t)el->first);
 					delta_pi[i*n+(size_t)el->first] =  this_pi - pi_arr[el->first];	
 				}
 				++i;
@@ -141,16 +141,30 @@ class HeavyString{
 			weight=pi_prefix[pos%n+len-1];
 		}
 		//cout<<"base weight: " <<weight<<endl;
+		
+		//map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(pos);
+		//while((alt_iter!=delta_pi.end()) && (alt_iter->first<pos+len)){
+		//	weight+= alt_iter->second;
+		//	++alt_iter;
+		//}
+		
+		//for(size_t i = 0; i < len; i++){
+		//	if(_alt.at(pos+i)!=_alt.end()){
+		//		weight+= delta_pi.at(pos+i);
+		//		//cout<< "modified at pos "<< pos+i<< " by "<<delta_pi.at(pos+i)<<endl;
+		//	}
+		//}
+		
 		for(size_t i = 0; i < len; i++){
-			if(_alt.count(pos+i)){
+			if(delta_pi.count(pos+i)){
 				weight+= delta_pi.at(pos+i);
-				//cout<< "modified at pos "<< pos+i<< " by "<<delta_pi.at(pos+i)<<endl;
 			}
-		}
+		}		
+		
 		return weight;
 	}
 	
-	
+	/*
 	size_t le(size_t i){
 		return alt_ext[i].first;
 	}
@@ -158,6 +172,7 @@ class HeavyString{
 	size_t re(size_t i){
 		return alt_ext[i].second;
 	}
+	* */
 	
 	size_t length() const {return N;}
 	size_t heavy_length() const {return n;}
