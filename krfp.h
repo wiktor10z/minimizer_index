@@ -42,6 +42,7 @@ namespace karp_rabin_hashing {
 // Base and exponent used in Karp-Rabin hashing.
 //=============================================================================
 extern std::uint64_t hash_variable;
+extern std::uint64_t hash_power_k; //hash variable to power k, where k is passed during initialisation
 extern std::uint64_t mersenne_prime_exponent;
 
 std::uint64_t mul_mod_mersenne(const std::uint64_t a,
@@ -52,11 +53,14 @@ std::uint64_t pow_mod_mersenne(const std::uint64_t a,
     std::uint64_t n, const std::uint64_t k);
 std::uint64_t concat(const std::uint64_t lhash,
     const std::uint64_t rhash, const std::uint64_t rlen);
-std::uint64_t subtract(const std::uint64_t long_hash, 
+std::uint64_t subtract(const std::uint64_t long_hash,
 const std::uint64_t short_hash, const std::uint64_t right_len);
+
+std::uint64_t concat_k(const std::uint64_t lhash,const std::uint64_t rhash);
+std::uint64_t subtract_k(const std::uint64_t long_hash,const std::uint64_t short_hash);
 std::uint64_t leftshift(const std::uint64_t hash);
 void compute_inverse();
-void init();
+void init(std::uint64_t k);
 
 //=============================================================================
 // Compute Karp-Rabin hash of a given string.

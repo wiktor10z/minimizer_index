@@ -53,10 +53,10 @@ int main (int argc, char ** argv )
     // mi = mallinfo2();
 	// double begin_ram = mi.hblkhd + mi.uordblks;
 	
-	karp_rabin_hashing::init();
 	MinimizerIndex M;
 	text >> M;
 	//cout << "finish reading" << endl;
+	karp_rabin_hashing::init(ceil(4*log2(l) / log2(M.alph.size())));//initialization with fixed k
 	M.build_index(z,l);
 	//cout << "Minimizer Index build finish" << endl;
 	//string Pattern="TCTCT";

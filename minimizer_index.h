@@ -15,7 +15,6 @@
 using namespace std;
 
 class MinimizerIndex{
-	string alph;
 	map<char, int> amap;
 	int N;
 	vector<vector<double>> fP;
@@ -30,6 +29,7 @@ class MinimizerIndex{
 	double naive_check(string P, int start_pos);
 	
 public:
+	string alph;
 	MinimizerIndex(): alph(), fP(), forward_index(NULL){}
 	//MinimizerIndex(vector<vector<double>> &P, string &A, int ell, int k, double z);
 	void build_index(double z,int ell);

@@ -130,7 +130,7 @@ int MinimizerIndex::pruning(int first_pos, double p1){ // p1= - log p - log z //
 
 
 void MinimizerIndex::build_index(double z, int l){
-	//auto begin = get_time::now();
+	auto begin = get_time::now();
 	int k = ceil(4*log2(l) / log2(alph.size()));
 	int n = fP.size();
 	list<pair<size_t,size_t>> minimizer_substrings;
@@ -247,9 +247,9 @@ void MinimizerIndex::build_index(double z, int l){
 	}
 	*/
 	//cout << "starting to build the heavy tree"<<endl;
-	//auto end = get_time::now();
-	//auto diff2 = end - begin;
-	//cout << "Lemma 13 time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
+	auto end = get_time::now();
+	auto diff2 = end - begin;
+	cout << "Lemma 13 time "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	//begin = get_time::now();
 	
 	HeavyString text=HeavyString(fP,H,alph,minimizer_substrings,global_diff,pi_prefix);

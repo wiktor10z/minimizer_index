@@ -47,7 +47,8 @@ void MinimizerHeap::left(char a){
 	if(S.size()> l){
 
 		heap.erase(heap.find(make_pair(righthash,n-S.size()+l-k+1)));
-		righthash = karp_rabin_hashing::concat(S[S.size()-1-l+k], righthash, k);
+		//righthash = karp_rabin_hashing::concat(S[S.size()-1-l+k], righthash, k);
+		righthash = karp_rabin_hashing::concat_k(S[S.size()-1-l+k], righthash);
 		righthash = karp_rabin_hashing::subtract(righthash, S[S.size()-1-l] , 0 );
 		righthash = karp_rabin_hashing::leftshift(righthash);
 	}
@@ -62,15 +63,18 @@ void MinimizerHeap::right(){
 	}
 	if(S.size()>k){
 		lefthash = karp_rabin_hashing::concat(lefthash,S[S.size()-1-k],1);
-		lefthash = karp_rabin_hashing::subtract(lefthash, S[S.size()-1] , k);		
+		//lefthash = karp_rabin_hashing::subtract(lefthash, S[S.size()-1] , k);		
+		lefthash = karp_rabin_hashing::subtract_k(lefthash, S[S.size()-1]);		
 	}else{
 		lefthash = karp_rabin_hashing::concat(lefthash,' ',0);
-		lefthash = karp_rabin_hashing::subtract(lefthash, S[S.size()-1] , k );
+		//lefthash = karp_rabin_hashing::subtract(lefthash, S[S.size()-1] , k );
+		lefthash = karp_rabin_hashing::subtract_k(lefthash, S[S.size()-1]);
 		righthash = lefthash;
 	}
 	if(S.size()>l){
 		righthash = karp_rabin_hashing::concat(righthash,S[S.size()-1-l],1);
-		righthash = karp_rabin_hashing::subtract(righthash, S[S.size()-1-l+k] , k );
+		//righthash = karp_rabin_hashing::subtract(righthash, S[S.size()-1-l+k] , k );
+		righthash = karp_rabin_hashing::subtract_k(righthash, S[S.size()-1-l+k]);
 		heap.insert(make_pair(righthash,n-S.size()+l-k+1));		
 	}
 	//S = S.substr(1);
@@ -90,7 +94,7 @@ uint64_t linear_minimizer(vector<char>& S, uint64_t l, uint64_t k){
 	for(INT j = 1; j<=l-k; j++)
 	{
 		fp = karp_rabin_hashing::concat( fp, S[S.size()-j-k] , 1 );
-		fp = karp_rabin_hashing::subtract( fp, S[S.size()-j] , k );
+		fp = karp_rabin_hashing::subtract_k( fp, S[S.size()-j]);
 		if(fp < min_fp){
 			min_fp = fp;
 			minimizers = j;
@@ -99,8 +103,7 @@ uint64_t linear_minimizer(vector<char>& S, uint64_t l, uint64_t k){
 	return minimizers;
 }
 
-
-/* Computes the minimizers of a string of length n in O(n) time */
+/*
 INT compute_minimizers(  string& text, INT w, INT k, unordered_set<uint64_t> &minimizers )
 {
 	INT n = text.length();
@@ -165,11 +168,13 @@ INT compute_minimizers(  string& text, INT w, INT k, unordered_set<uint64_t> &mi
 	return 0;
 }
 
+*/
+
 INT pattern_minimizers(string& text,INT k)
 {
 	INT n = text.length();
 	
-	/*
+	
 	INT fp = 0;
 		
 	for(INT j = 0; j<k; j++)
@@ -184,21 +189,21 @@ INT pattern_minimizers(string& text,INT k)
 	for(INT j = 1; j<=n-k; j++)
 	{
 		fp = karp_rabin_hashing::concat( fp, text[j+k-1] , 1 );
-		fp = karp_rabin_hashing::subtract( fp, text[j-1] , k );
+		fp = karp_rabin_hashing::subtract_k( fp, text[j-1]);
 		
 		if(fp < min_fp){
 			min_fp = fp;
 			minimizers = j;
 		}		
 	}
-	*/
+	/*
 	INT fp=0;
 	for(INT j = n-k; j<n; j++)
 		fp =  karp_rabin_hashing::concat( fp, text[j] , 1 );	
 	INT min_fp = fp;
 	INT minimizers = n-k;	
 	for(int j=n-k-1;j>=0;j--){
-		fp = karp_rabin_hashing::concat(text[j], fp, k);
+		fp = karp_rabin_hashing::concat_k(text[j], fp);
 		fp = karp_rabin_hashing::subtract(fp, text[j+k] , 0 );
 		fp = karp_rabin_hashing::leftshift(fp);
 		if(fp <= min_fp){
@@ -206,6 +211,6 @@ INT pattern_minimizers(string& text,INT k)
 			minimizers = j;
 		}
 	}
-	
+	*/
 	return minimizers;
 }
