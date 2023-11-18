@@ -35,6 +35,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  **/
+ //WZ:Modified for the purpose of computing hashes of subsequent factors of length k faster
 
 #include <cstdio>
 #include <cstdlib>
@@ -194,7 +195,7 @@ std::uint64_t leftshift(const std::uint64_t hash){
 	return mul_mod_mersenne(hash, inverse, mersenne_prime_exponent);
 }
 
-std::uint64_t concat_k(//here we assume, that right_len is a constant passed during initialisation
+std::uint64_t concat_k(//here we assume, that right_len is a constant passed during initialization
     const std::uint64_t left_hash,
     const std::uint64_t right_hash) {
   const std::uint64_t tmp = mul_mod_mersenne(
@@ -205,8 +206,7 @@ std::uint64_t concat_k(//here we assume, that right_len is a constant passed dur
 }
 
 
-
-std::uint64_t subtract_k( //here we assume, that right_len is a constant passed during initialisation
+std::uint64_t subtract_k( //here we assume, that right_len is a constant passed during initialization
     const std::uint64_t long_hash,
     const std::uint64_t short_hash) {
   const std::uint64_t tmp = mul_mod_mersenne(

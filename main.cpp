@@ -55,11 +55,9 @@ int main (int argc, char ** argv )
 	
 	MinimizerIndex M;
 	text >> M;
-	//cout << "finish reading" << endl;
 	karp_rabin_hashing::init(ceil(4*log2(l) / log2(M.alph.size())));//initialization with fixed k
 	M.build_index(z,l);
 	//cout << "Minimizer Index build finish" << endl;
-	//string Pattern="TCTCT";
 	//M.occurrences(Pattern,l,z,output_file);
 	// mi = mallinfo2();
 	
@@ -77,18 +75,16 @@ if(!st.patterns.empty()){
 		patterns.push(boost::iostreams::gzip_decompressor());
 		patterns.push(file);	
 		begin = get_time::now();
-		//cout<<patterns.size()<<" patterns to check"<<endl;
 		for (string pattern; getline(patterns, pattern); ){
-			//cout << pattern << ":"<<endl;
 			std::vector<int> occs = M.occurrences(pattern, l, z, output_file);
-			if (occs.empty()) {
+			//if (occs.empty()) {
 				// output_file << "\n";
-			} else {
+			//} else {
 				// for (auto p : occs) {
 					// output_file << p << " ";
 				// }
 				// output_file << endl;
-			}
+			//}
 			total_occ += occs.size();
 		}
 		end = get_time::now();

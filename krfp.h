@@ -29,6 +29,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  **/
+//WZ:Modified for the purpose of computing hashes of subsequent factors of length k faster
 
 #ifndef __KARP_RABIN_HASHING_HPP_INCLUDED
 #define __KARP_RABIN_HASHING_HPP_INCLUDED
