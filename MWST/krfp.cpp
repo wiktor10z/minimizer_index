@@ -241,8 +241,14 @@ void compute_inverse(){
 void init(uint64_t k) {
   mersenne_prime_exponent = 61; //do not change this
   hash_variable = rand_mod_mersenne(mersenne_prime_exponent);
+  //hash_variable = 1021496463792946286; // TODO - this is a "derandomization" for the purpose of decreasing the variance in the running time - to be removed
   compute_inverse();
   hash_power_k = pow_mod_mersenne(hash_variable, k, mersenne_prime_exponent);
 }
-}
 
+
+void init() {
+  mersenne_prime_exponent = 61; //do not change this
+  hash_variable = rand_mod_mersenne(mersenne_prime_exponent);
+}
+}

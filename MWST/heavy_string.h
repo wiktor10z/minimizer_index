@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <map>
 #include <string>
 #include <algorithm>
 #include <cstddef>
@@ -13,7 +14,7 @@
 
 class HeavyString{
 	std::string H;
-	std::unordered_map<size_t, char> _alt;
+	std::map<size_t, char> _alt;
 	std::unordered_map<int, double> delta_pi;
 	std::unordered_map<int, std::vector<int>> alt_pos;
 	std::unordered_map<int, std::pair<int, int>> alt_ext;
@@ -95,7 +96,7 @@ class HeavyString{
 			n = other.n;
 			N = other.N;
 			pi_suf.assign(other.pi_suf.begin(), other.pi_suf.end());
-			std::unordered_map<size_t, char>temp1(other._alt);
+			std::map<size_t, char>temp1(other._alt);
 			std::unordered_map<int, double>temp2(other.delta_pi);
 			std::unordered_map<int, std::vector<int>> temp3(other.alt_pos);
 			std::unordered_map<int, std::pair<int, int>> temp4(other.alt_ext);
@@ -137,10 +138,15 @@ class HeavyString{
 		}
 		std::string substring = H.substr(pos%n, len);
 
-		for(size_t i = 0; i < len; i++){
-			if(_alt.count(pos+i)){
-				substring[i] = _alt.at(pos+i);
-			}
+		//for(size_t i = 0; i < len; i++){
+		//	if(_alt.count(pos+i)){
+		//		substring[i] = _alt.at(pos+i);
+		//	}
+		//}
+		std::map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
+		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+			substring[alt_iter->first-pos]=alt_iter->second;
+			++alt_iter;
 		}
 
 		return substring;
