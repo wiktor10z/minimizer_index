@@ -32,7 +32,7 @@ INT compute_minimizers(  string& text, INT w, INT k, unordered_set<uint64_t> &mi
 	for(INT j = 1; j<=n-k; j++)
 	{
 		fp = karp_rabin_hashing::concat( fp, text[j+k-1] , 1 );
-		fp = karp_rabin_hashing::subtract( fp, text[j-1] , k );
+		fp = karp_rabin_hashing::subtract_k( fp, text[j-1]);
 		
 		//cout<<fp<<endl;
 		FP[pos] = fp;
@@ -81,14 +81,10 @@ INT pattern_minimizers(string& text,INT k)
 	INT n = text.length();
 	INT fp = 0;
 	INT smallest_fp = fp;
-	
-	INT * FP = ( INT * ) malloc( ( n - k + 1  ) *  sizeof( INT ) );
-	
+		
 	for(INT j = 0; j<k; j++)
 		fp =  karp_rabin_hashing::concat( fp, text[j] , 1 );
 		
-	FP[0] = fp;
-	INT pos = 1;
 	//cout<<fp<<endl;
 	INT min_fp = fp;
 	INT minimizers = 0;
@@ -97,23 +93,17 @@ INT pattern_minimizers(string& text,INT k)
 	for(INT j = 1; j<=n-k; j++)
 	{
 		fp = karp_rabin_hashing::concat( fp, text[j+k-1] , 1 );
-		fp = karp_rabin_hashing::subtract( fp, text[j-1] , k );
+		fp = karp_rabin_hashing::subtract_k( fp, text[j-1]);
 		
 		//cout<<fp<<endl;
-		FP[pos] = fp;
-		pos++;
+		if(fp < min_fp){
+			min_fp = fp;
+			minimizers = j;
+		}
 	}	
 	
 		
 	// minimum fp in first window
-   	for (INT j = 0; j <= n - k ; j++) 
-   	{
-		if(FP[j] < min_fp){
-			min_fp = FP[j];
-			minimizers = j;
-		}
- 	}
-	
-	free( FP );
+
 	return minimizers;
 }

@@ -67,7 +67,7 @@ bool is_valid(vector<vector<double>>& text, string& alph, string& p, int64_t   p
 
 int main (int argc, char ** argv )
 {
-    	Settings st = decode_switches(argc, argv);
+    Settings st = decode_switches(argc, argv);
 	istream& text_file = st.text.is_open()?st.text:cin;
 	ostream& output_file = st.output.is_open()?st.output:cout;
 	ofstream result;
@@ -82,7 +82,6 @@ int main (int argc, char ** argv )
 
 	string alphabet;
 	vector<vector<double>> text;
-	karp_rabin_hashing::init();
 
 	int   N;
 	text_file >> N;
@@ -104,12 +103,14 @@ int main (int argc, char ** argv )
 	
 	int k = ceil(4 * log2(ell) / log2(alphabet.size()));
 	int w = ell - k + 1;
-
+	karp_rabin_hashing::init(k);
+	
 	cout << "index begin" << endl;
 	Estimation fS(text, alphabet, z);
 	string zstrs;
 	vector<int> mini_pos;
 	
+	//auto begin2 = get_time::now();
 	int  ii = 0;
 	for(PropertyString const & s : fS.strings()){
 		zstrs += s.string();
@@ -120,7 +121,10 @@ int main (int argc, char ** argv )
 				mini_pos.push_back(it + ii*N);
 		ii++;
 	}
-
+	//auto end2 = get_time::now();
+	//auto diff3 = end2 - begin2;
+	//cout << "minimizers computation:  "<< chrono::duration_cast<chrono::milliseconds>(diff3).count()<< endl;
+	
 	int   Nz = zstrs.size();
 	string rev_zstrs(zstrs.rbegin(), zstrs.rend());
 
@@ -132,7 +136,13 @@ int main (int argc, char ** argv )
 	unordered_set<int> f_mini_pos(mini_pos.begin(), mini_pos.end());
 	int g = f_mini_pos.size();
 
+	//begin2 = get_time::now();
 	HeavyString fH(text, zstrs, alphabet, f_mini_pos, le, re, true);
+	//end2 = get_time::now();
+	//diff3 = end2 - begin2;
+
+	//cout<< "heavy string construction:  "<< chrono::duration_cast<chrono::milliseconds>(diff3).count()<< endl;
+	
 	
 	fS.clear();
 	vector<vector<double>>().swap(text);

@@ -35,6 +35,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  **/
+ //WZ:Modified for the purpose of computing hashes of subsequent factors of length k faster
 
 #include <cstdio>
 #include <cstdlib>
@@ -55,7 +56,9 @@ namespace karp_rabin_hashing {
 // Base and exponent used in Karp-Rabin hashing.
 //=============================================================================
 std::uint64_t hash_variable;
+std::uint64_t hash_power_k;
 std::uint64_t mersenne_prime_exponent;
+std::uint64_t inverse;
 
 //=============================================================================
 // Return (a * b) mod p, where p = (2^k) - 1.
@@ -187,12 +190,65 @@ std::uint64_t subtract(
     ((long_hash + p) - tmp);
 }
 
+
+std::uint64_t leftshift(const std::uint64_t hash){
+	return mul_mod_mersenne(hash, inverse, mersenne_prime_exponent);
+}
+
+std::uint64_t concat_k(//here we assume, that right_len is a constant passed during initialization
+    const std::uint64_t left_hash,
+    const std::uint64_t right_hash) {
+  const std::uint64_t tmp = mul_mod_mersenne(
+      left_hash, hash_power_k, mersenne_prime_exponent);
+  const std::uint64_t ret = mod_mersenne(
+      tmp + right_hash, mersenne_prime_exponent);
+  return ret;
+}
+
+
+std::uint64_t subtract_k( //here we assume, that right_len is a constant passed during initialization
+    const std::uint64_t long_hash,
+    const std::uint64_t short_hash) {
+  const std::uint64_t tmp = mul_mod_mersenne(
+      short_hash, hash_power_k, mersenne_prime_exponent);
+  const std::uint64_t p = ((std::uint64_t)1 << mersenne_prime_exponent) - 1;
+  return (long_hash >= tmp) ?
+    (long_hash - tmp) :
+    ((long_hash + p) - tmp);
+}
+
+
+//computation of the inverse of hash_variable
+void compute_inverse(){
+	inverse=1;
+	std::uint64_t multip;
+	std::uint64_t p = ((std::uint64_t)1 << mersenne_prime_exponent) - 1;
+	std::uint64_t a = hash_variable;
+	while(a!=1){
+		multip = p/a;
+		multip=mul_mod_mersenne(multip, p-1,mersenne_prime_exponent);
+		inverse =mul_mod_mersenne(inverse,multip,mersenne_prime_exponent);
+		a=p%a;
+	}
+}
+
+
+
+
 //=============================================================================
 // Initialize the base and exponent for Karp-Rabin hashing.
 //=============================================================================
+void init(uint64_t k) {
+  mersenne_prime_exponent = 61; //do not change this
+  hash_variable = rand_mod_mersenne(mersenne_prime_exponent);
+  //hash_variable = 1021496463792946286; // TODO - this is a "derandomization" for the purpose of decreasing the variance in the running time - to be removed
+  compute_inverse();
+  hash_power_k = pow_mod_mersenne(hash_variable, k, mersenne_prime_exponent);
+}
+
+
 void init() {
   mersenne_prime_exponent = 61; //do not change this
   hash_variable = rand_mod_mersenne(mersenne_prime_exponent);
 }
 }
-

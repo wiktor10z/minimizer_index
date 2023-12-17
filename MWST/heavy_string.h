@@ -95,8 +95,7 @@ class HeavyString{
 		
 		//new implementation = the same as old implementation but avoiding iterating over the same position twice
 		for(int m : min_pos){
-			alt_ext[m].first = le[m];
-			alt_ext[m].second = re[m];
+			alt_ext[m]=std::make_pair(le[m],re[m]);
 		}
 		
 		std::map<int,std::pair<int,int>>::iterator iter=alt_ext.begin();
