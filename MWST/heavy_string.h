@@ -15,9 +15,9 @@
 class HeavyString{
 	std::string H;
 	std::map<size_t, char> _alt;
-	std::unordered_map<int, double> delta_pi;
-	std::unordered_map<int, std::vector<int>> alt_pos;
-	std::unordered_map<int, std::pair<int, int>> alt_ext;
+	std::map<size_t, double> delta_pi;
+	//std::unordered_map<int, std::vector<int>> alt_pos;
+	std::map<int, std::pair<int, int>> alt_ext;
 	std::vector<double> pi_suf;
 	size_t n;
 	size_t N;
@@ -71,6 +71,9 @@ class HeavyString{
 			}
 		}
 		
+		
+		/*
+		//old implementation (already with small unifying changes applied)
 		for(int m : min_pos){
 			int begin = m - le[m];
 			int end = m + re[m] + 1;
@@ -79,13 +82,59 @@ class HeavyString{
 			for(int i = begin; i < end; i++){
 				int h = i%n;
 				if(H[h] != S[i]){
+					//alt_pos[m].push_back(i);					
 					double this_pi = log2(P[h][A.find(S[i])]);
 					_alt[i] = S[i];
-					alt_pos[m].push_back(i);
 					delta_pi[i] =  this_pi - pi_arr[h];
 				}
 			}
 		}
+		*/
+		
+		
+		
+		//new implementation = the same as old implementation but avoiding iterating over the same position twice
+		for(int m : min_pos){
+			alt_ext[m].first = le[m];
+			alt_ext[m].second = re[m];
+		}
+		
+		std::map<int,std::pair<int,int>>::iterator iter=alt_ext.begin();
+		int i=iter->first-iter->second.first;
+		while(true){
+			if(i>iter->first+iter->second.second){
+				++iter;
+				while((iter!=alt_ext.end())&&(i>iter->first+iter->second.second)){
+					++iter;
+				}
+				if(iter==alt_ext.end()) return;
+				if(iter->first-iter->second.first>i) i=iter->first-iter->second.first;
+			}
+			int h = i%n;
+			if(H[h]!=S[i]){
+				double this_pi = log2(P[h][A.find(S[i])]);
+				_alt[i] = S[i];
+				delta_pi[i] =  this_pi - pi_arr[h];
+			}
+			++i;
+		}	
+		
+		
+		
+		//simpler implementation iterating over all positions of the z-estimation. Fast in practice (although now this part is not the bottle neck) but with worse theoretical guarantees.
+		/*for(int m : min_pos){
+			alt_ext[m].first = le[m];
+			alt_ext[m].second = re[m];
+		}
+		for(size_t i=0;i<S.length();++i){
+			int h = i%n;
+			if(H[h]!=S[i]){
+				double this_pi = log2(P[h][A.find(S[i])]);
+				_alt[i] = S[i];
+				delta_pi[i] =  this_pi - pi_arr[h];
+			}			
+		}*/
+		 		
 	}
 
 	HeavyString(const HeavyString& other): H(other.H), _alt(other._alt), n(other.n), N(other.N) {}
@@ -97,12 +146,12 @@ class HeavyString{
 			N = other.N;
 			pi_suf.assign(other.pi_suf.begin(), other.pi_suf.end());
 			std::map<size_t, char>temp1(other._alt);
-			std::unordered_map<int, double>temp2(other.delta_pi);
-			std::unordered_map<int, std::vector<int>> temp3(other.alt_pos);
-			std::unordered_map<int, std::pair<int, int>> temp4(other.alt_ext);
+			std::map<size_t, double>temp2(other.delta_pi);
+			//std::unordered_map<int, std::vector<int>> temp3(other.alt_pos);
+			std::map<int, std::pair<int, int>> temp4(other.alt_ext);
 			std::swap(_alt, temp1);
 			std::swap(delta_pi, temp2);
-			std::swap(alt_pos, temp3);
+			//std::swap(alt_pos, temp3);
 			std::swap(alt_ext, temp4);
 		}
 		return *this;
@@ -162,6 +211,17 @@ class HeavyString{
 		
 		double cum_pi = pi_suf[begin%n] - pi_suf[end%n];
 		
+		
+		// new implementation
+		std::map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(begin);
+		while((alt_iter!=delta_pi.end()) && (alt_iter->first<end)){
+			cum_pi += alt_iter->second;
+			++alt_iter;
+		}
+		return pow(2,cum_pi);
+		
+		
+		/*//old implementation
 		std::vector<int>& v = alt_pos[i];
 		if(v.empty()){
 			return pow(2,cum_pi);
@@ -173,6 +233,8 @@ class HeavyString{
 			}
 			return pow(2,cum_pi);
 		}
+		*/
+		
 	}
 	
 	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){

@@ -135,14 +135,18 @@ void extention ( vector<vector<double>>& text, string& s, string& alph, vector<i
 
 void MinimizerIndex::build_index(double z, int ell){
 	vector<vector<double>> rP(fP.rbegin(), fP.rend());
+	//auto begin = get_time::now();
 	Estimation fS(fP,alph,z);
+	//auto end = get_time::now();
+	//auto diff2 = end - begin;
+	//cout << "z-estimation computation: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	PropertyString fT;
 	std::vector<int> f_mini_pos;
 	std::vector<int> r_mini_pos;
 	int i = 0;
 	int k = ceil(4 * log2(ell) / log2(alph.size()));
 	int w = ell - k + 1;
-	
+	//begin = get_time::now();
 	for(PropertyString const & s : fS.strings()){
 		fT += s;
 		std::unordered_set<uint64_t> M;
@@ -152,28 +156,44 @@ void MinimizerIndex::build_index(double z, int ell){
 			f_mini_pos.emplace_back(it + i*N);
 		}
 		i++;
-	}	
+	}
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "minimizers computation: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	string zstrs = fT.string();
 	string rev_zstrs(zstrs.rbegin(), zstrs.rend());
 	vector<int> le;
 	vector<int> re;
-
+	//begin = get_time::now();
 	extention(fP, zstrs, alph, le, re, z);
 	vector<int> le_r(le.rbegin(), le.rend());
 	vector<int> re_r(re.rbegin(), re.rend());
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "extensions computation: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 	
 	f_mini_pos.erase(remove_if(f_mini_pos.begin(), f_mini_pos.end(), [&](int i) { return re[i] < k; }), f_mini_pos.end());
 
 	for(auto i : f_mini_pos){
 		r_mini_pos.push_back(zstrs.size() - i);
 	}
+	//begin = get_time::now();
 	HeavyString fH(fP, zstrs, alph, f_mini_pos, le, re, true);
 	HeavyString rH(rP, rev_zstrs, alph, r_mini_pos, le_r, re_r, false);
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "heavy strings computation: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
+	
+	
 	Nz = zstrs.size();
 
+	//begin = get_time::now();
 	forward_index = new PropertySuffixTree(re, fH,f_mini_pos);
 	
 	reverse_index = new PropertySuffixTree(le_r, rH, r_mini_pos);
+	//end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "trees construction total time (sum of previous 4): "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;	
 		
 	fS.clear();
 	fT.clear();	

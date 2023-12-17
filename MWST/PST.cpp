@@ -18,10 +18,13 @@
 #include <stack>
 #include <cstring>
 #include <algorithm>
+#include <chrono>
 #include <unordered_set>
+#include <ctime>
 #include "PST.h"
 
 using namespace std;
+using get_time = std::chrono::steady_clock;
 
 PropertySuffixTree::stNode::stNode(PropertySuffixTree::position const &begin, PropertySuffixTree::position const &end): suf_link(NULL), children(), begin(begin), end(end) {}
 
@@ -230,8 +233,16 @@ void PropertySuffixTree::process_property(const vector<int>& pi, std::vector<int
 
 PropertySuffixTree::PropertySuffixTree(vector<int> const& S, HeavyString const& H, std::vector<int> const& pos) {
 	text = H;
+	//auto begin = get_time::now();	
     build_suffix_tree();
+   // auto end = get_time::now();
+	//auto diff2 = end - begin;
+	//cout << "    just the suffix tree construction: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
+	//begin = get_time::now();
     process_property(S,pos);
+    //end = get_time::now();
+	//diff2 = end - begin;
+	//cout << "    leaves removal and pruning: "<< chrono::duration_cast<chrono::milliseconds>(diff2).count()<<endl;
 }
 
 void PropertySuffixTree::minimizer_trim(vector<int> const& property, std::vector<int> const& pos) {
