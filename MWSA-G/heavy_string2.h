@@ -11,17 +11,12 @@
 #include <cmath>
 #include <stdexcept> 
 #include <iostream>
-#include <chrono>
-#include <ctime>
-
-
-using get_time = std::chrono::steady_clock;
 
 class HeavyString{
 	std::string H;
 	std::map<size_t, char> _alt;
 	std::map<size_t, double> delta_pi;
-	//std::map<int, std::vector<int>> alt_pos;
+	//std::unordered_map<int, std::vector<int>> alt_pos;
 	std::map<int, std::pair<int, int>> alt_ext;
 	std::vector<double> pi_suf;
 	int n;
@@ -53,12 +48,8 @@ class HeavyString{
 	HeavyString(std::vector<std::vector<double>>& P,  std::string const& S, std::string& A, std::unordered_set<int> min_pos, std::vector<int> le, std::vector<int> re, bool create_pi){
 		n = P.size();
 		N = S.size();
-		//auto begin = get_time::now();
 		std::vector<int> min_pos2(min_pos.begin(),min_pos.end());
-		std::sort(min_pos2.begin(),min_pos2.end()); //this sorting makes the alt_ext computation a little faster
-		//auto end = get_time::now();
-		//auto diff2 = end - begin;
-		//std::cout << "uset to vector time: "<< std::chrono::duration_cast<std::chrono::milliseconds>(diff2).count()<<std::endl;
+		std::sort(min_pos2.begin(),min_pos2.end());
 		if (n == 0 || N == 0) {
 			throw std::invalid_argument("P and S cannot be empty.");
 		}
@@ -72,7 +63,6 @@ class HeavyString{
 			pi_arr.push_back(pi);
 		}
 		
-		
 		if(create_pi){				
 			pi_suf.assign(pi_arr.begin(), pi_arr.end());
 			for(int i = n-2; i >= 0; i--){
@@ -80,32 +70,9 @@ class HeavyString{
 			}
 		}
 		
-		/*
-		for(int m : min_pos2){
-			int begin = m - le[m] - 1;
-			int end = m + re[m] + 1;
-			alt_ext[m].first = le[m];
-			alt_ext[m].second = re[m];
-			for(int i = begin; i < end; i++){
-				int h = i%n;
-				if(H[h] != S[i]){
-					double this_pi = log2(P[h][A.find(S[i])]);
-					_alt[i] = S[i];
-					//alt_pos[m].push_back(i);
-					delta_pi[i] =  this_pi - pi_arr[h];
-				}
-			}
-		}
-		*/
-		//begin = get_time::now();
 		for(int m : min_pos2){
 			alt_ext[m]=std::make_pair(le[m],re[m]);
-			//alt_ext[m].first = le[m];
-			//alt_ext[m].second = re[m];
 		}
-		//end = get_time::now();
-		//diff2 = end - begin;
-		//std::cout << "alt_ext construction time: "<< std::chrono::duration_cast<std::chrono::milliseconds>(diff2).count()<<std::endl;		
 		
 		std::map<int,std::pair<int,int>>::iterator iter=alt_ext.begin();
 		int i=iter->first-iter->second.first;
@@ -125,10 +92,7 @@ class HeavyString{
 				delta_pi[i] =  this_pi - pi_arr[h];
 			}
 			++i;
-		}	
-		
-		
-		
+		}
 	}
 	
 	HeavyString(const HeavyString& other): H(other.H), _alt(other._alt), n(other.n), N(other.N) {}
@@ -189,13 +153,6 @@ class HeavyString{
 			len = n- pos%n;
 		}
 		std::string substring = H.substr(pos%n, len);
-
-		/*
-		for(size_t i = 0; i < len; i++){
-			if(_alt.count(pos+i)){
-				substring[i] = _alt.at(pos+i);
-			}
-		}*/
 		std::map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
 		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
 			substring[alt_iter->first-pos]=alt_iter->second;
@@ -212,22 +169,7 @@ class HeavyString{
 		if( i + alt_ext[i].second < begin + length - 1 ) return 0;
 		
 		int end = begin + length;
-		double cum_pi = pi_suf[begin%n] - pi_suf[end%n];
-		
-		/*
-		std::vector<int>& v = alt_pos[i];
-		if(v.empty()){
-			return pow(2,cum_pi);
-		}else{
-			for(auto j : v){
-				if(j >= begin && j < end){					
-					cum_pi += delta_pi[j];
-				}
-			}
-
-			return pow(2,cum_pi);
-		}*/
-		
+		double cum_pi = pi_suf[begin%n] - pi_suf[end%n];	
 		std::map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(begin);
 		while((alt_iter!=delta_pi.end()) && (alt_iter->first<end)){
 			cum_pi += alt_iter->second;
@@ -237,7 +179,7 @@ class HeavyString{
 		
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){//TODO we can do that using substr - it should be faster
+	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
 		for(auto i = 0; i < length; i++){
 			if(pat[pat_begin + i] != this->at(txt_begin+i)){
 				return 0;

@@ -83,7 +83,6 @@ int main (int argc, char ** argv )
 
 	string alphabet;
 	vector<vector<double>> text;
-	karp_rabin_hashing::init();
 
 	int   N;
 	text_file >> N;
@@ -106,6 +105,7 @@ int main (int argc, char ** argv )
 	
 	int k = ceil(4 * log2(ell) / log2(alphabet.size()));
 	int w = ell - k + 1;
+	karp_rabin_hashing::init(k);
 	
 	cout << "index begin" << endl;
 	Estimation fS(text, alphabet, z);
@@ -248,21 +248,31 @@ int main (int argc, char ** argv )
 		patterns.push(boost::iostreams::gzip_decompressor());
 		patterns.push(file);	
 		begin = get_time::now();
+		auto search_time = 0;
+		auto verify_time = 0;
+		auto grid_time = 0;
+		auto mini_time = 0;
 		for (string pattern; getline(patterns, pattern); ){
 			if(pattern.size() < k) continue;
-			// output_file << pattern << ":"; 
+			// output_file << pattern << ":";
+			auto bf = get_time::now();
 			size_t j = pattern_minimizers(pattern, k);
+			auto ef = get_time::now();
+			mini_time += chrono::duration_cast<chrono::microseconds>(ef-bf).count();
 			string left_pattern = pattern.substr(0, j+1);
 			
-
+			auto b1 = get_time::now();
 			reverse(left_pattern.begin(), left_pattern.end());
 			pair<int64_t ,int64_t> left_interval = rev_pattern_matching ( left_pattern, fH, LSA, LLCP, lrmq, (int64_t)g ); 
 			string right_pattern = pattern.substr(j);			
 			pair<int64_t ,int64_t> right_interval = pattern_matching ( right_pattern, fH, RSA, RLCP, rrmq, (int64_t)g );
-
+			auto e1 = get_time::now();
+			search_time += chrono::duration_cast<chrono::microseconds>(e1-b1).count();
+				
 			if ( left_interval.first <= left_interval.second  && right_interval.first <= right_interval.second )
 			{			
 				//Finding rectangle containing bd-anchors in grid
+				auto bg1 = get_time::now();
 				grid_query rectangle;
 				rectangle.row1 = left_interval.first+1;
 				rectangle.row2 = left_interval.second+1;
@@ -272,8 +282,13 @@ int main (int argc, char ** argv )
 				vector<size_t> result;
 				construct.search_2d(rectangle, result);
 			
+				auto eg1 = get_time::now();
+				grid_time += chrono::duration_cast<chrono::microseconds>(eg1-bg1).count();		
+			
+			
 				set<int64_t> valid_res;
-
+				
+				auto bv1 = get_time::now();
 				for(size_t i = 0; i < result.size(); i++){
 					if(valid_res.count( (RSA[result.at(i)-1]-j)%N) ) continue;
 					if(fH.get_pi(RSA[result.at(i)-1], RSA[result.at(i)-1]-j, pattern.size() ) * z >= 1){
@@ -282,14 +297,19 @@ int main (int argc, char ** argv )
 				}
 				total_occ_no += valid_res.size();
 					// for(auto i : valid_res)
-						// output_file<< i << " ";				
+						// output_file<< i << " ";
+				auto ev1 = get_time::now();
+				verify_time += chrono::duration_cast<chrono::microseconds>(ev1-bv1).count();		
 			}
 				// output_file << endl;	
 		}
 		end = get_time::now();
 		auto diff3 = end - begin;
 		output_file << "PMT "<< chrono::duration_cast<chrono::milliseconds>(diff3).count()<<"\n" << "OCCS " << total_occ_no << endl;
-
+		output_file << "minimizer time: " << double(mini_time) * 0.001 << endl;
+		output_file << "search time: " << double(search_time) * 0.001 << endl; 
+		output_file << "grid time: " << double(grid_time) * 0.001 << endl;	
+		output_file << "verify time: " << double(verify_time) * 0.001 << endl;			
 	}
 
 	return 0;

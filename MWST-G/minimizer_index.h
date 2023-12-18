@@ -7,7 +7,6 @@
 #include "grid.h"
 
 class MinimizerIndex {
-	std::string alph;
 	int N;
 	int Nz;
 	std::vector<std::vector<double>> fP;
@@ -22,6 +21,7 @@ class MinimizerIndex {
 	bool is_valid(string const& p, int pos, double z) const;
 
 public:
+	std::string alph;
 	MinimizerIndex(): alph(), fP(), forward_index(NULL), reverse_index(NULL){}
 	~MinimizerIndex(){
 		if(forward_index) delete forward_index;

@@ -46,10 +46,10 @@ int main (int argc, char ** argv )
     	//mi = mallinfo2();
 	//auto begin_ram = mi.hblkhd + mi.uordblks;
 	
-	karp_rabin_hashing::init();
 	MinimizerIndex M;
 	text >> M;
-    	M.build_index(st.z, ell);
+	karp_rabin_hashing::init(ceil(4*log2(ell) / log2(M.alph.size())));//initialization with fixed k
+    M.build_index(st.z, ell);
 	//mi = mallinfo2();
 	//auto end_ram = mi.hblkhd + mi.uordblks;
 	auto end = get_time::now();
