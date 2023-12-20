@@ -19,7 +19,7 @@ using namespace std;
 class HeavyString{
 	std::string H;
 	std::map<size_t, char> _alt; //here we use map, as elements when multiple elements are accessed they are often close in the structure - the difference in time is noticable
-	std::unordered_map<size_t, double> delta_pi;
+	std::map<size_t, double> delta_pi;
 	std::vector<double> pi_prefix;
 
 	public:
@@ -29,28 +29,31 @@ class HeavyString{
 	
 
 	HeavyString(std::vector<std::vector<double>>& P, std::string const& S,std::string& A, list<pair<size_t,size_t>>& min_list,list<list<pair<int,char>>>& diffs,vector<double>& pi_pref){
-			H = S;
-			n=S.size();
-			N= n* min_list.size();
-			pi_prefix=pi_pref;
-			list<pair<int,char>> diff;
-			vector<double> pi_arr;
-			pi_arr.push_back(pi_prefix[0]);
-			for(int i=1;i<n;++i){
-				pi_arr.push_back(pi_prefix[i]-pi_prefix[i-1]);
+		H = S;
+		n=S.size();
+		N= n* min_list.size();
+		pi_prefix=pi_pref;
+		list<pair<int,char>> diff;
+		vector<double> pi_arr;
+		pi_arr.push_back(pi_prefix[0]);
+		for(int i=1;i<n;++i){
+			pi_arr.push_back(pi_prefix[i]-pi_prefix[i-1]);
+		}
+		size_t i=0;
+		list<pair<size_t,size_t>>::iterator minit=min_list.begin();
+		for(list<pair<size_t,size_t>>::iterator minit=min_list.begin(); minit!=min_list.end();++minit){
+			diff=diffs.front();
+			diffs.pop_front();
+			for(list<pair<int,char>>::iterator el=diff.begin();el!=diff.end();++el){
+				double this_pi = log2(P[el->first][A.find(el->second)]);
+				_alt[i*n+(size_t)el->first]=el->second;
+				delta_pi[i*n+(size_t)el->first] =  this_pi - pi_arr[el->first];	
 			}
-			size_t i=0;
-			list<pair<size_t,size_t>>::iterator minit=min_list.begin();
-			for(list<pair<size_t,size_t>>::iterator minit=min_list.begin(); minit!=min_list.end();++minit){
-				diff=diffs.front();
-				diffs.pop_front();
-				for(list<pair<int,char>>::iterator el=diff.begin();el!=diff.end();++el){
-					double this_pi = log2(P[el->first][A.find(el->second)]);
-					_alt[i*n+(size_t)el->first]=el->second;
-					delta_pi[i*n+(size_t)el->first] =  this_pi - pi_arr[el->first];	
-				}
-				++i;
-			}
+			++i;
+		}
+		//guardians
+		_alt[N]=' ';
+		delta_pi[N]=0.0;
 	}	
 	
 	char& operator[](size_t i) { 
@@ -84,7 +87,8 @@ class HeavyString{
 		std::string substring = H.substr(pos%n, len);
 
 		map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
-		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+		//while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+		while(alt_iter->first<pos+len){
 			substring[alt_iter->first-pos]=alt_iter->second;
 			++alt_iter;
 		}
@@ -124,11 +128,17 @@ class HeavyString{
 			weight=pi_prefix[pos%n+len-1];
 		}
 	
-		for(size_t i = 0; i < len; i++){
-			if(delta_pi.count(pos+i)){
-				weight+= delta_pi.at(pos+i);
-			}
-		}		
+		//for(size_t i = 0; i < len; i++){
+		//	if(delta_pi.count(pos+i)){
+				//weight+= delta_pi.at(pos+i);
+			//}
+		//}
+		std::map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(pos);
+		//while((alt_iter!=delta_pi.end()) && (alt_iter->first<pso+len)){
+		while (alt_iter->first<pos+len){
+			weight += alt_iter->second;
+			++alt_iter;
+		}	
 		
 		return weight;
 	}

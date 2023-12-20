@@ -73,7 +73,11 @@ class HeavyString{
 		for(int m : min_pos2){
 			alt_ext[m]=std::make_pair(le[m],re[m]);
 		}
-		
+
+		//guardians
+		_alt[N]=' ';
+		delta_pi[N]=0.0;
+				
 		std::map<int,std::pair<int,int>>::iterator iter=alt_ext.begin();
 		int i=iter->first-iter->second.first;
 		while(true){
@@ -138,7 +142,8 @@ class HeavyString{
 		}
 		std::string substring = H.substr(pos%n);
 		std::map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
-		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+substring.size())){
+		//while((alt_iter!=_alt.end()) && (alt_iter->first<pos+substring.size())){
+		while(alt_iter->first<pos+substring.size()){
 			substring[alt_iter->first-pos]=alt_iter->second;
 			++alt_iter;
 		}
@@ -154,7 +159,8 @@ class HeavyString{
 		}
 		std::string substring = H.substr(pos%n, len);
 		std::map<size_t,char>::iterator alt_iter = _alt.lower_bound(pos);
-		while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+		//while((alt_iter!=_alt.end()) && (alt_iter->first<pos+len)){
+		while(alt_iter->first<pos+len){
 			substring[alt_iter->first-pos]=alt_iter->second;
 			++alt_iter;
 		}
@@ -171,7 +177,8 @@ class HeavyString{
 		int end = begin + length;
 		double cum_pi = pi_suf[begin%n] - pi_suf[end%n];	
 		std::map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(begin);
-		while((alt_iter!=delta_pi.end()) && (alt_iter->first<end)){
+		//while((alt_iter!=delta_pi.end()) && (alt_iter->first<end)){
+		while (alt_iter->first<end){
 			cum_pi += alt_iter->second;
 			++alt_iter;
 		}
