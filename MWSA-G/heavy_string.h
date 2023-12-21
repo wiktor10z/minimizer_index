@@ -168,7 +168,7 @@ class HeavyString{
 		return substring;
 	}
 	
-	double get_pi(int i, int begin, int length){//TODO since the starting position of the iterator can be tied with i maybe we can do that to avoid the O(log n) finding.		
+	double get_pi(int i, int begin, int length){		
 		if(begin%n > i%n)			return 0;
 		if(begin%n + length > n)	return 0;
 		if( i - alt_ext[i].first > begin ) return 0;
@@ -185,14 +185,14 @@ class HeavyString{
 		return pow(2,cum_pi);
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){//TODO maybe we could try to check this using substr
-		for(auto i = 0; i < length; i++){
-			if(pat[pat_begin + i] != this->at(txt_begin+i)){
-				return 0;
-			}
-		}
-		return this->get_pi(min_pos,txt_begin, length);
-	}
+	//double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
+	//	for(auto i = 0; i < length; i++){
+	//		if(pat[pat_begin + i] != this->at(txt_begin+i)){
+	//			return 0;
+	//		}
+	//	}
+	//	return this->get_pi(min_pos,txt_begin, length);
+	//}
 	
 	size_t le(size_t i){
 		return alt_ext[i].first;

@@ -242,7 +242,7 @@ class HeavyString{
 		
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
+	double check_pi2(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
 		for(auto i = 0; i < length; i++){
 			if(pat[pat_begin + i] != this->at(txt_begin+i)){
 				return 0;

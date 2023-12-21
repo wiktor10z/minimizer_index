@@ -218,11 +218,18 @@ std::vector<int> MinimizerIndex::occurrences(std::string const &P, int ell, doub
 			if(begin < 0) continue;
 			if(begin + m >= Nz) continue;
 			if(occs.count(begin%N)) continue;
-			double rpi = forward_index->get_pi(o, o, r);
-			double lpi = forward_index->naive_check(P, 0, begin, l, o);
-			if( rpi * lpi *z >=1 ){
-				occs.insert( begin%N );
+			
+			if(forward_index->naive_check(P, 0, begin, l, o)){
+				if(forward_index->get_pi(o, begin, l+r)*z>=1){
+					occs.insert( begin%N );
+				}
 			}
+			
+			//double rpi = forward_index->get_pi(o, o, r);
+			//double lpi = forward_index->naive_check2(P, 0, begin, l, o);
+			//if( rpi * lpi *z >=1 ){
+			//	occs.insert( begin%N );
+			//}
 		}
 	}else{
 		std::string rP = P;
@@ -235,11 +242,17 @@ std::vector<int> MinimizerIndex::occurrences(std::string const &P, int ell, doub
 			if(begin + m >= Nz) continue;
 			if(occs.count(begin%N)) continue;
 			int c = Nz - o;
-			double lpi = forward_index->get_pi(c,begin,l);
-			double rpi = forward_index->naive_check(P, l, begin+l, r, c);	
-			if( rpi * lpi *z >=1 ){
-				occs.insert( begin%N );
+			if(forward_index->naive_check(P, l, begin+l, r, c)){
+				if(forward_index->get_pi(c, begin, l+r)*z>=1){
+					occs.insert( begin%N );
+				}
 			}
+			
+			//double lpi = forward_index->get_pi(c,begin,l);
+			//double rpi = forward_index->naive_check2(P, l, begin+l, r, c);	
+			//if( rpi * lpi *z >=1 ){
+			//	occs.insert( begin%N );
+			//}
 		}
 	}
 	std::vector<int> final_occs(occs.begin(), occs.end());

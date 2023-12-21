@@ -360,7 +360,15 @@ double PropertySuffixTree::get_pi(int i, int begin, int length){
 }
 
 
-double PropertySuffixTree::naive_check(string const & pat, int p_begin, int t_begin, int length, int c){
+bool PropertySuffixTree::naive_check(string const & pat, int p_begin, int t_begin, int length, int c){
+	std::string textpart=text.substr(t_begin,length);
+	if(textpart!=pat.substr(p_begin,length)){
+		return false;
+	}
+	return true;
+}
+
+double PropertySuffixTree::naive_check2(string const & pat, int p_begin, int t_begin, int length, int c){
 	for(int i = 0; i < length; i++){
 		if(pat[p_begin + i] != text[t_begin+i]){
 			return 0;
@@ -368,3 +376,7 @@ double PropertySuffixTree::naive_check(string const & pat, int p_begin, int t_be
 	}
 	return text.get_pi(c,t_begin, length);
 }
+
+
+
+

@@ -196,14 +196,14 @@ class HeavyString{
 		
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
-		for(auto i = 0; i < length; i++){
-			if(pat[pat_begin + i] != this->at(txt_begin+i)){
-				return 0;
-			}
-		}
-		return this->get_pi(min_pos,txt_begin, length);
-	}
+	//double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
+	//	for(auto i = 0; i < length; i++){
+	//		if(pat[pat_begin + i] != this->at(txt_begin+i)){
+	//			return 0;
+	//		}
+	//	}
+	//	return this->get_pi(min_pos,txt_begin, length);
+	//}
 	
 	size_t length() const {return N;}
 	size_t heavy_length() const {return n;}

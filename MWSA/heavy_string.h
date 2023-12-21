@@ -187,12 +187,12 @@ class HeavyString{
 	}
 
 	std::string substr(size_t pos, size_t len = 0){
-		if (pos >= N || pos%n + len > n) {
+		if (pos >= N || pos%n + len > n|| len==0) {
 			return "";
 		}
-		if(len == 0){	//if no length is given, print to the end
-			len = n- pos%n;
-		}
+		//if(len == 0){	//if no length is given, print to the end
+		//	len = n- pos%n;
+		//}
 		std::string substring = H.substr(pos%n, len);
 
 		/*
@@ -244,14 +244,35 @@ class HeavyString{
 		
 	}
 	
-	double check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){//TODO we can do that using substr - it should be faster
+	bool check_pi(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
+		//for(auto i = 0; i < length; i++){
+		//	if(pat[pat_begin + i] != this->at(txt_begin+i)){
+		//		return 0;
+		//	}
+		//}
+		std::string textpart=this->substr(txt_begin,length);
+		if(textpart!=pat.substr(pat_begin,length)){
+			return false;
+		}
+		return true;
+		
+		//return this->get_pi(min_pos,txt_begin, length);
+	}
+	
+		double check_pi2(std::string& pat, size_t pat_begin, size_t txt_begin, size_t length, size_t min_pos){
 		for(auto i = 0; i < length; i++){
 			if(pat[pat_begin + i] != this->at(txt_begin+i)){
 				return 0;
 			}
 		}
+		//std::string textpart=this->substr(txt_begin,length);
+		//if(textpart!=pat.substr(pat_begin,length)){
+		//	return 0;
+		//}		
 		return this->get_pi(min_pos,txt_begin, length);
 	}
+	
+	
 	
 	size_t le(size_t i){
 		return alt_ext[i].first;

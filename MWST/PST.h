@@ -84,6 +84,7 @@ public:
 	void clean();
 	std::vector<int> toSA();
 	double get_pi(int i, int begin, int length);
-	double naive_check(string const & pat, int p_begin, int t_begin, int length, int c);
+	bool naive_check(string const & pat, int p_begin, int t_begin, int length, int c);
+	double naive_check2(string const & pat, int p_begin, int t_begin, int length, int c);
     ~PropertySuffixTree();
 };

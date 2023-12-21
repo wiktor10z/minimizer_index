@@ -134,7 +134,7 @@ class HeavyString{
 			//}
 		//}
 		std::map<size_t,double>::iterator alt_iter = delta_pi.lower_bound(pos);
-		//while((alt_iter!=delta_pi.end()) && (alt_iter->first<pso+len)){
+		//while((alt_iter!=delta_pi.end()) && (alt_iter->first<pos+len)){
 		while (alt_iter->first<pos+len){
 			weight += alt_iter->second;
 			++alt_iter;

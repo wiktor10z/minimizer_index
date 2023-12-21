@@ -249,13 +249,17 @@ int main (int argc, char ** argv )
 						if(begin < 0 || begin + pattern.size() >= Nz) continue;
 						if(valid_res.count(begin%N)) continue;	
 
-						 int c = Nz - LSA[i] - 1;						
-						 double lpi = fH.get_pi(c, begin, l);
-						 double rpi = fH.check_pi(pattern, l, begin+l, r, c);
-						
-						 if( lpi * rpi * z >= 1 ){
-							 valid_res.insert( begin%N );
-						 }
+						 int c = Nz - LSA[i] - 1;
+						 if(fH.check_pi(pattern, l, begin+l, r, c)){
+							 if( fH.get_pi(c, begin, l+r) * z >= 1 ){
+								valid_res.insert( begin%N );
+							}
+						 }				
+						 //double lpi = fH.get_pi(c, begin, l);
+						 //double rpi = fH.check_pi2(pattern, l, begin+l, r, c);
+						 //if( lpi * rpi * z >= 1 ){
+							// valid_res.insert( begin%N );
+						// }
 
 						//if(is_valid(text, alphabet, pattern, begin, z)){
 						//	valid_res.insert( begin%N );
@@ -279,11 +283,17 @@ int main (int argc, char ** argv )
 						if(begin < 0 || begin + pattern.size() >= Nz) continue;
 						if(valid_res.count(begin%N)) continue;
 						
-						double rpi = fH.get_pi( RSA[i], RSA[i], r);
-						double lpi = fH.check_pi(pattern, 0, begin, l,  RSA[i]);
-						if( rpi * lpi * z >= 1 ){
-							 valid_res.insert( begin%N );
-						}
+						 if(fH.check_pi(pattern, 0, begin, l,  RSA[i])){
+							 if( fH.get_pi(RSA[i], begin, l+r) * z >= 1 ){
+								valid_res.insert( begin%N );
+							}
+						 }						
+						
+						//double rpi = fH.get_pi( RSA[i], RSA[i], r);
+						//double lpi = fH.check_pi2(pattern, 0, begin, l,  RSA[i]);
+						//if( rpi * lpi * z >= 1 ){
+						//	 valid_res.insert( begin%N );
+						//}
 						
 						//if(is_valid(text, alphabet, pattern, begin, z)){
 							//valid_res.insert( begin%N );
